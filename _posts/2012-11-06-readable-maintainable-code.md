@@ -4,6 +4,7 @@ title: Readable maintainable code? Use DDD TDD CQRS IoC
 ---
 
 Back in 1994 when I was 14 my parents asked me if I want a video player or a computer. So I got a PC, 286, 12 MHz, EGA graphics with 16 bloody colours. Everybody was playing doom except me. After completing all sorts of 16 coloured games distributed on faulty 3.5" diskettes, I became bored. A friend of mine installed Turbo Pascal on my machine, and I was started. Later I learned C/C++, Java, wrote couple of university projects in it, and at last C#/.NET - a language and a platform of my choice.
+<!--more-->
 
 When I started working, I realized that most companies were doing waterfall development - develop something quickly to make deadline and budget happy. Then support it for couple of years, pray for no requirement changes, if there are requirement changes, hack it somehow to make it work, then hack it even more, and then don't touch it otherwise you break it for good. I realized I want to do some other way of development - the way which is compatible with requirement changes and  safe refactoring so you don't have to hack but maintain the code nice and tidy over the *years*. I learned that a way to achieve it is to use TDD/DDD/design principles & patterns/agile/CQRS/IoC/DI and other magic shortcuts in my development process. So how do these shortcuts solve issues? 
 

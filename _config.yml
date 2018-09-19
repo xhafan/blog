@@ -7,7 +7,7 @@ title:            xhafan's blog
 tagline:          ''
 description:      'Software development, DDD, TDD, .NET, C#'
 url:              https://fongandrew.github.io
-baseurl:          ''
+baseurl:          '/blog'
                   # the optional subpath of your site, e.g. "/blog"
                   # NB: This applies to all pages in your Jekyll site.
                   # If you want to move just the blog index pages but keep
@@ -42,3 +42,5 @@ disqus:
 #google_analytics: UA-35071416-1
 
 encoding: utf-8
+
+excerpt_separator: "<!--more-->"
