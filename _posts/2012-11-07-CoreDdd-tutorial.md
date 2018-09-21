@@ -3,7 +3,7 @@ layout: post
 title: CoreDdd tutorial - real life DDD/TDD ASP.NET MVC and WPF application built on CoreDdd library
 ---
 
-In a [previous article](/do-you-want-to-write-readable-maintainable-code-use-ddd-tdd-cqrs-ioc) you can read more about a motivation behind CoreDdd library. Application we are going to build on [CoreDdd](http://nuget.org/packages/CoreDdd) library is an e-shop, source code [here](http://code.google.com/p/eshop-coreddd).  Initially it's going to be a simplified version, but agile process enables you to iteratively add more features, DDD/TDD/CQRS/patterns & principles ensure not to plunge into a spaghetti waterfall code, and as you learn the business/domain as you go along, you can safely refactor if required and take the project to a more mature version. Initial version of the e-shop application would contain:
+In a [previous article]({{ site.baseurl }}/do-you-want-to-write-readable-maintainable-code-use-ddd-tdd-cqrs-ioc) you can read more about a motivation behind CoreDdd library. Application we are going to build on [CoreDdd](http://nuget.org/packages/CoreDdd) library is an e-shop, source code [here](http://code.google.com/p/eshop-coreddd).  Initially it's going to be a simplified version, but agile process enables you to iteratively add more features, DDD/TDD/CQRS/patterns & principles ensure not to plunge into a spaghetti waterfall code, and as you learn the business/domain as you go along, you can safely refactor if required and take the project to a more mature version. Initial version of the e-shop application would contain:
 <!--more-->
 
 1. Display a list of products
