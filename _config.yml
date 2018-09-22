@@ -39,7 +39,7 @@ disqus:
   shortname: xhafan
 
 # Google Analytics
-#google_analytics: UA-35071416-1
+google_analytics: UA-35071416-1
 
 encoding: utf-8
 
