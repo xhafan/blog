@@ -1068,7 +1068,7 @@ So far we need two queries:
 
 Applying CQRS pattern ensures that implementation of commands and queries are independent. Commands are implemented via domain layer, queries can be implemented in whatever way is suitable for the project, with one common thing - data are delivered in a DTO (data transfer object). There are couple of NHibernate options how to implement queries:
 
-* reuse domain entities for NHibernate querying via [QueryOver](http://nhforge.org/blogs/nhibernate/archive/2009/12/17/queryover-in-nh-3-0.aspx) and map data from entities into dtos. Unfortunately this option involves sometimes cumbersome joining in query over syntax, and sometimes it is not possible to formulate a query in the most efficient way
+* reuse domain entities for NHibernate querying via [QueryOver](http://nhibernate.info/blog/2009/12/17/queryover-in-nh-3-0.html) and map data from entities into dtos. Unfortunately this option involves sometimes cumbersome joining in query over syntax, and sometimes it is not possible to formulate a query in the most efficient way
 * map a dto directly into a database view and hide the SQL complexity in the database view; this option has the advantage that you can write arbitrary SQL query in the database view, but it needs to be written manually; an integration test for the query will ensure that the database view SQL is tested
 
 We are going to implement the latter option - mapping dtos directly into database views. Btw this option allows later converting database views into tables with flattened data to improve performance if needed.
