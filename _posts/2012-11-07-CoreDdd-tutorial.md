@@ -1,6 +1,6 @@
 ---
 layout: post
-title: CoreDdd tutorial - real life DDD/TDD ASP.NET MVC and WPF application built on CoreDdd library
+title: CoreDdd tutorial - developing an application with CoreDdd library using DDD and TDD
 ---
 
 _This article is for legacy CoreDdd [version 1.7.1.1](https://www.nuget.org/packages/CoreDdd/1.1.7.1). There is a newer CoreDdd [version 3](https://www.nuget.org/packages/CoreDdd), with a documentation and samples [here](https://github.com/xhafan/coreddd/wiki). Also this tutorial uses [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) which I used at the point of writing this article (~2012), but since then I switched to [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd), and now I consider the TDD code samples in this article a legacy code._
