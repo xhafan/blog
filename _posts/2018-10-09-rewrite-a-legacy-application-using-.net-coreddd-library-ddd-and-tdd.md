@@ -29,3 +29,9 @@ If you decided to rewrite your legacy application using [DDD](https://stackoverf
 [mention adding CI - e.g. appveyor - when multiple devs working on the project]
 
 [add a new CoreDdd wiki page about persistence unit tests]
+
+Steps:
+1. Rewrite the project by adding code inside the project - add CoreDdd, unit tests, persistence tests
+2. Add a new ASP.NET Core project and re-use code added in step 1.
+3. Add docker support, deploy alpine linux image of the project to docker hub
+4. Run the app inside docker linux, docker pull to do an application update   
