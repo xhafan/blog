@@ -12,7 +12,7 @@ When considering rewriting a fairly big legacy application, written in now outda
 
 I personally prefer the option 2 for the following reasons:
 
-- allows [agile software development](https://en.wikipedia.org/wiki/Agile_software_development) - a delivery of new features is regular, with a feedback from users
+- allows [agile software development](https://en.wikipedia.org/wiki/Agile_software_development) - a delivery of new features is frequent and regular, with a feedback from users
 - the business can prioritize which features will be delivered first 
 - no unrealistic fixed distant delivery deadline as with option 3
 
@@ -20,9 +20,11 @@ Sometimes option 1 is fine as well, as long as the framework used on the legacy 
 
 If you decided to rewrite your legacy application using [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) because the business domain is too complex, [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library can help with the DDD infrastructure for your project. It supports .NET Core 2 and higher and .NET framework 4 and higher. To learn more about CoreDdd, please refer to the CoreDdd  [documentation](https://github.com/xhafan/coreddd/wiki) and [code samples](https://github.com/xhafan/coreddd-sample).
 
-[implement example ASP.NET Web Forms app, executing some SP doing some crazy stuff with 2-3 tables, and show an sample rewrite over the same database using CoreDdd, DDD, **chicago TDD**] 
+[implement example ASP.NET Web Forms app, executing some SP doing some crazy stuff with 2-3 tables, and show a sample rewrite over the same database using CoreDdd, DDD, **chicago TDD**] 
 
-[Performance - publishing messages to bus]
+[Performance - publishing messages to bus] - segregation of queries and commands into their own transactions - smaller transactions, better performance;
+
+[Chicago style controller tests - discuss advantages and disadvantages of London style vs chicago style tests - add London examples as well] 
    
 [docker hub - continuous deployment]
 
