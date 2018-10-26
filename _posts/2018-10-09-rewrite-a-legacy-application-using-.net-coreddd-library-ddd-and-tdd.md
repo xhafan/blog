@@ -373,7 +373,7 @@ public class ShipHistoryMappingOverrides : IAutoMappingOverride<ShipHistory>
     }
 }
 ```
-This mapping classes instruct NHibernate to map `Ship` entity `Id` property into table `Ship`, column `ShipId`, and that the id generation will be done by SQL Server identity. Also, property `Name` will be mapped into `ShipName` column.
+This mapping classes instruct NHibernate to map `Ship` entity `Id` property into table `Ship`, column `ShipId`, and that the id generation will be done by SQL Server identity. Also, property `Name` will be mapped into `ShipName` column. Similar mapping for `ShipHistory`.
 
 Now the `Ship` persistence passes. Let's add a new persistence test for `ShipHistory`:
 ```c#
@@ -428,9 +428,186 @@ public class when_persisting_ship_history
     }
 }
 ```
+These tests should pass straight away. The domain code covered by unit tests and integration tests is complete. Now we need to add a command `CreateNewShipCommand`:
+```c#
+public class CreateNewShipCommand : ICommand
+{
+    public string ShipName { get; set; }
+    public decimal Tonnage { get; set; }
+}
+```
+And a command handler `CreateNewShipCommandHandler` without any implementation:
+```c#
+public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipCommand>
+{
+    public CreateNewShipCommandHandler(IRepository<Ship> shipRepository)
+    {
+    }
+
+    public override void Execute(CreateNewShipCommand command)
+    {
+    }
+}
+```
+Command handler has a ship repository passed into a constructor as it will be needed to save the new ship into a database. It's derived from [`BaseCommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/BaseCommandHandler.cs), but instead of inheritance you could just implement [`ICommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/ICommandHandler.cs). Following the TDD, let's add a command handler test first:
+```c#
+[TestFixture]
+public class when_creating_new_ship
+{
+    private PersistenceTestHelper _p;
+    private Ship _persistedShip;
+    private int _generatedShipId;
+
+    [SetUp]
+    public void Context()
+    {
+        _p = new PersistenceTestHelper(new MyNhibernateConfigurator());
+        _p.BeginTransaction();
+
+        var createNewShipCommand = new CreateNewShipCommand
+        {
+            ShipName = "ship name",
+            Tonnage = 23.45678m
+        };
+        var createNewShipCommandHandler = new CreateNewShipCommandHandler(new NhibernateRepository<Ship>(_p.UnitOfWork));
+        createNewShipCommandHandler.CommandExecuted += args => _generatedShipId = (int) args.Args;
+        createNewShipCommandHandler.Execute(createNewShipCommand);
+
+        _p.Clear();
+
+        _persistedShip = _p.Get<Ship>(_generatedShipId);
+    }
+
+    [Test]
+    public void ship_can_be_retrieved_and_data_are_persisted_correctly()
+    {
+        _persistedShip.ShouldNotBeNull();
+        _persistedShip.Name.ShouldBe("ship name");
+        _persistedShip.Tonnage.ShouldBe(23.45678m);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _p.Rollback();
+    }
+}
+```
+This test fails. Let's implement the command handler:
+```c#
+public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipCommand>
+{
+    private readonly IRepository<Ship> _shipRepository;
+
+    public CreateNewShipCommandHandler(IRepository<Ship> shipRepository)
+    {
+        _shipRepository = shipRepository;
+    }
+
+    public override void Execute(CreateNewShipCommand command)
+    {
+        var newShip = new Ship(command.ShipName, command.Tonnage);
+        _shipRepository.Save(newShip);
+
+        RaiseCommandExecutedEvent(new CommandExecutedArgs { Args = newShip.Id });
+    }
+}
+```
+The test passes. Please note that the command handler test should test just a happy path, any branching (=if) in the domain entity code should be covered by a domain tests and not command handler tests. Also, this test is [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test, which adds value of knowing that things work end to end. Let's see how [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test would look like (with the help of mocking library [FakeItEasy](https://www.nuget.org/packages/FakeItEasy)):
+```c#
+using FakeItEasy;
+
+[TestFixture]
+public class when_creating_new_ship
+{
+    private int _generatedShipId;
+    private IRepository<Ship> _shipRepository;
+
+    [SetUp]
+    public void Context()
+    {
+        var createNewShipCommand = new CreateNewShipCommand
+        {
+            ShipName = "ship name",
+            Tonnage = 23.45678m
+        };
+        _shipRepository = A.Fake<IRepository<Ship>>();
+        A.CallTo(() => _shipRepository.Save(A<Ship>._)).Invokes(x =>
+        {
+            // when shipRepository.Save() is called, simulate NHibernate assigning Id to the Ship entity
+            var shipPassedAsParameter = x.GetArgument<Ship>(0);
+            shipPassedAsParameter.SetPrivateProperty("Id", 23);
+        });
+        var createNewShipCommandHandler = new CreateNewShipCommandHandler(_shipRepository);
+        createNewShipCommandHandler.CommandExecuted += args => _generatedShipId = (int) args.Args;
+        createNewShipCommandHandler.Execute(createNewShipCommand);
+    }
+
+    [Test]
+    public void ship_is_saved_with_correct_data()
+    {
+        A.CallTo(() => _shipRepository.Save(A<Ship>.That.Matches(p => _MatchingShip(p)))).MustHaveHappened();
+    }
+
+    private bool _MatchingShip(Ship p)
+    {
+        p.Name.ShouldBe("ship name");
+        p.Tonnage.ShouldBe(23.45678m);
+        return true;
+    }
+
+    [Test]
+    public void command_executed_event_is_raised_with_stubbed_ship_id()
+    {
+        _generatedShipId.ShouldBe(23);
+    }
+}
+public static class ObjectExtensions
+{
+    public static void SetPrivateProperty(this object obj, string propertyName, object value)
+    {
+        obj.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(obj, value, null);
+    }
+}
+```
+This London style TDD unit test for `CreateNewShipCommandHandler` does not add much value. Yes, it is faster to execute (as it's not dealing with a database), but there no point in [stubbing or mocking](https://stackoverflow.com/questions/346372/whats-the-difference-between-faking-mocking-and-stubbing) things when one can just use real objects and test it end to end. I would even say that unit-testing adds value when you don't have to stub or mock. When you have to stub or mock a lot for the sake of having a unit test, I would suggest try Chicago style TDD unit test with real objects, or, if database is needed, try an integration test, and see for yourself which test adds more value for you.
+
+The next thing is to call the command handler from the Web Forms page code-behind:
+```c#
+public partial class CreateShip : Page
+{
+    private ICommandExecutor _commandExecutor;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        _commandExecutor = IoC.Resolve<ICommandExecutor>();
+    }
+
+    protected void CreateShipButton_Click(object sender, EventArgs e)
+    {
+        var createNewShipCommand = new CreateNewShipCommand
+        {
+            ShipName = ShipNameTextBox.Text,
+            Tonnage = decimal.Parse(TonnageTextBox.Text)
+        };
+
+        _commandExecutor.CommandExecuted += args =>
+        {
+            var generatedShipId = (int)args.Args;
+            LastShipIdCreatedLabel.Text = $"{generatedShipId}";
+        };
+        _commandExecutor.Execute(createNewShipCommand);
+    }
+
+    protected void Page_Unload(object sender, EventArgs e)
+    {
+        IoC.Release(_commandExecutor);
+    }
+}
+```
 
 
-As ASP.NET Web Forms is not a good fit to do TDD, we will ignore testing the code-behind page methods. 
+As ASP.NET Web Forms the page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the samples above is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp).
 
 ### Incrementally rewriting a legacy ASP.NET Web Forms application problematic parts as a new ASP.NET Core MVC application
 
