@@ -3,7 +3,15 @@ layout: post
 title: Rewrite a legacy application using .NET, CoreDdd library, DDD and TDD
 published: false
 ---
-### This blog post is about rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedure) with the new test driven implementation using commands, queries and domain entities.
+### About rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedure) with the new test driven implementation using commands, queries and domain entities.
+
+### Table of Contents
+- [Options for rewrite](#options_for_rewrite)
+- [Example legacy application](#example_legacy_app)
+- [Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base](#rewrite_in_existing_app)
+- [Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application](#rewrite_as_new_app)
+
+### <a name="options_for_rewrite"></a>Options for rewrite
 
 When considering rewriting a fairly big legacy application, written in now outdated frameworks (e.g. ASP.NET Web Forms), using legacy ways of implementing a business logic (e.g. a business logic encoded in database stored procedures), which everybody is afraid to modify, there are couple of options for the application rewrite:
 
@@ -20,6 +28,8 @@ I personally prefer the option 2 for the following reasons:
 Sometimes option 1 is fine as well, as long as the framework used on the legacy project is upgradeable to a more modern (preferably latest) version (e.g. .NET 2 -> .NET 4.x). Project rewrites using options 3 I've seen mostly failed, and were destined to be slowly abandoned or rewritten yet again.
 
 If you decide to rewrite your legacy application using [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) because the business domain is quite complex, [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library can help with the DDD and CQRS infrastructure for your project. It supports .NET Core 2 and higher and .NET framework 4 and higher. To learn more about CoreDdd, please refer to the CoreDdd  [documentation](https://github.com/xhafan/coreddd/wiki) and [code samples](https://github.com/xhafan/coreddd-sample).
+
+### <a name="example_legacy_app"></a>Example legacy application
 
 The example legacy application we are about to rewrite is a ship management application. This application can create new ships, update existing ships, and list existing ships. It's an ASP.NET Web Forms application, with code-behind page model, using database stored procedures to implement the server side business logic. The ASPX code to create a new ship might look like this:
 ```aspx
@@ -142,7 +152,7 @@ The problem with this approach is that the code - both page code-behind C# and S
 
 The motivation to rewrite an application is usually the fact that the application is not maintainable, and any change to the application causes a new set of bugs. Let's try to rewrite the code in a better maintainable way, using DDD and TDD.
 
-### Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base
+### <a name="rewrite_in_existing_app"></a>Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base
 
 The first rewrite attempt will rewrite the ship creation code above using DDD and TDD, with the help of CoreDdd library. For this, we need to:
 
@@ -609,7 +619,7 @@ public partial class CreateShip : Page
 
 As ASP.NET Web Forms the page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the samples above is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp).
 
-### Incrementally rewriting a legacy ASP.NET Web Forms application problematic parts as a new ASP.NET Core MVC application
+### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
 [implement example ASP.NET Web Forms app, executing some SP doing some crazy stuff with 2-3 tables, and show a sample rewrite over the same database using CoreDdd, DDD, **chicago TDD**] 
 
