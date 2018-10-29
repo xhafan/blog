@@ -643,13 +643,7 @@ public class ManageShipsController : Controller
     }
 }
 ```
-We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Create a new .NET Core class library, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), add the following nuget packages into it:
-- [CoreDdd](https://www.nuget.org/packages/CoreDdd/)
-- [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/)
-- [CoreDdd.Nhibernate.TestHelpers](https://www.nuget.org/packages/CoreDdd.Nhibernate.TestHelpers/)
-- [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/)
-
-and add the *create new ship* test: 
+We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Create a new .NET Core class library, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests, and add the [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/) nuget package into it. Add *create new ship* test: 
 ```c#
 [TestFixture]
 public class when_creating_new_ship
@@ -937,9 +931,13 @@ public class when_creating_new_ship
     }
 }
 ```  
-This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, useless test adding no value.
+This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, it is a useless test adding no value.
 
 The source code of the new ASP.NET Core MVC create ship implementation using DDD and CQRQ is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/AspNetCoreMvcApp). In there you can find an implementation of a ship update page, and listing existing ships page.
+
+[Add a link to domain events with an explanation that this feature would make transactions even smaller. Give example of the usage - logging, notification to some other system that a ship was created, etc. Basically everything what does not have to be done to handle the request, can be delayed using domain events].
+
+[Add a help how to install local DB sql server - check some visual studio desktop development settings. Paste there an example of hibernate.cfg.xml using the localdb sql server]
 
 [Performance - publishing messages to bus] - segregation of queries and commands into their own transactions - smaller transactions, better performance;
  
