@@ -146,7 +146,7 @@ create table ShipHistory
 )
 ```
 
-The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application. The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts).
+The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application. The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts). To open the solution, you will need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher.
 
 The problem with this approach is that the code - both page code-behind C# and SQL - are difficult to modify because it's difficult to [unit or integration test](https://stackoverflow.com/questions/5357601/whats-the-difference-between-unit-tests-and-integration-tests) code-behind and SQL. To be able to modify a code in the long run, one has to develop the code using TDD, and with the test coverage, it's possible to modify the code in a confident way that the previous functionality won't be broken.
 
@@ -180,7 +180,7 @@ public class Ship : Entity, IAggregateRoot
     public decimal Tonnage { get; private set; }
 }
 ```
-A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Standard class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`; unit test library has to target .NET Core instead of .NET Standard) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
+A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
 ```c#
 [TestFixture]
 public class when_creating_new_ship
@@ -274,7 +274,7 @@ public class ShipHistory : Entity
     ...
 }
 ``` 
-The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new .NET Standard class library project for integration tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests. Use the NHibernate configurator created in the steps above and use the SQL scripts above to create a test database. The persistence test for `Ship` class will look like this:
+The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new .NET Core class library project for integration tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests. Use the NHibernate configurator created in the steps above and use the SQL scripts above to create a test database. The persistence test for `Ship` class will look like this:
 ```c#
 [TestFixture]
 public class when_persisting_ship
@@ -626,21 +626,326 @@ As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will i
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
-Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created in the previous text.
+Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created for the Web Forms application (see above). The application will also reuse the domain code and the create new ship command/command handler.
 
-[Manually edit csproj, and set target frameworks to net40;netstandard2.0 (for test project to net40;netcoreapp2.1)]
+Create a new controller `ManageShipsController` with an empty method `CreateNewShip`:
+```c#
+public class ManageShipsController : Controller
+{
+    public ManageShipsController(ICommandExecutor commandExecutor)
+    {
+    }
 
-[implement example ASP.NET Web Forms app, executing some SP doing some crazy stuff with 2-3 tables, and show a sample rewrite over the same database using CoreDdd, DDD, **chicago TDD**] 
+    [HttpPost]
+    public async Task<IActionResult> CreateNewShip(CreateNewShipCommand createNewShipCommand)
+    {
+        return null;
+    }
+}
+```
+We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Create a new .NET Core class library, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), add the following nuget packages into it:
+- [CoreDdd](https://www.nuget.org/packages/CoreDdd/)
+- [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/)
+- [CoreDdd.Nhibernate.TestHelpers](https://www.nuget.org/packages/CoreDdd.Nhibernate.TestHelpers/)
+- [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/)
+
+and add the *create new ship* test: 
+```c#
+[TestFixture]
+public class when_creating_new_ship
+{
+    private PersistenceTestHelper _p;
+    private ServiceProvider _serviceProvider;
+    private IServiceScope _serviceScope;
+
+    private IActionResult _actionResult;
+    private int _shipCountBefore;
+
+    [SetUp]
+    public async Task Context()
+    {
+        _serviceProvider = new ServiceProviderHelper().BuildServiceProvider();
+        _serviceScope = _serviceProvider.CreateScope();
+
+        _p = new PersistenceTestHelper(_serviceProvider.GetService<NhibernateUnitOfWork>());
+        _p.BeginTransaction();
+
+        _shipCountBefore = _GetShipCount();
+
+        var manageShipsController = new ManageShipsControllerBuilder(_serviceProvider).Build();
+
+        var createNewShipCommand = new CreateNewShipCommand
+        {
+            ShipName = "ship name",
+            Tonnage = 23.4m
+        };
+        _actionResult = await manageShipsController.CreateNewShip(createNewShipCommand);
+
+        _p.Flush();
+    }
+
+    [Test]
+    public void new_ship_is_created()
+    {
+        _GetShipCount().ShouldBe(_shipCountBefore + 1);
+    }
+
+    [Test]
+    public void action_result_is_redirect_to_action_result()
+    {
+        _actionResult.ShouldBeOfType<RedirectToActionResult>();
+        var redirectToActionResult = (RedirectToActionResult)_actionResult;
+        redirectToActionResult.ControllerName.ShouldBeNull();
+        redirectToActionResult.ActionName.ShouldBe("CreateNewShip");
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _p.Rollback();
+        _serviceScope.Dispose();
+        _serviceProvider.Dispose();
+    }
+
+    private int _GetShipCount()
+    {
+        return _p.UnitOfWork.Session.QueryOver<Ship>().RowCount();
+    }
+}
+
+public class ServiceProviderHelper
+{
+    public ServiceProvider BuildServiceProvider()
+    {
+        var services = new ServiceCollection();
+        services.AddCoreDdd();
+        services.AddCoreDddNhibernate<CoreDddSharedNhibernateConfigurator>();
+
+        // register command handlers
+        services.Scan(scan => scan
+            .FromAssemblyOf<Ship>()
+            .AddClasses(classes => classes.AssignableTo(typeof(ICommandHandler<>)))
+            .AsImplementedInterfaces()
+            .WithTransientLifetime()
+        );
+        return services.BuildServiceProvider();
+    }
+}
+
+public class ManageShipsControllerBuilder
+{
+    private readonly ServiceProvider _serviceProvider;
+
+    public ManageShipsControllerBuilder(ServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
+    public ManageShipsController Build()
+    {
+        var commandExecutor = new CommandExecutor(_serviceProvider.GetService<ICommandHandlerFactory>());
+        return new ManageShipsController(commandExecutor);
+    }
+}
+```
+The integration test checks that after the controller `CreateNewShip` method call there is a new ship created in the database. The test fails. Let's implement the controller method `CreateNewShip`:
+```c#
+public class ManageShipsController : Controller
+{
+    private readonly ICommandExecutor _commandExecutor;
+
+    public ManageShipsController(ICommandExecutor commandExecutor)
+    {
+        _commandExecutor = commandExecutor;
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateNewShip(CreateNewShipCommand createNewShipCommand)
+    {
+        await _commandExecutor.ExecuteAsync(createNewShipCommand);
+
+        return RedirectToAction("CreateNewShip");
+    }
+}
+``` 
+The test passes. Let's implement controller method to view `CreateNewShip` page:
+```c#
+public class ManageShipsController : Controller
+{
+    ...
+    public IActionResult CreateNewShip()
+    {
+        return null;
+    }
+    ...
+}
+``` 
+Let's add the integration test first:
+```c#
+[TestFixture]
+public class when_viewing_create_new_ship
+{
+    private PersistenceTestHelper _p;
+    private ServiceProvider _serviceProvider;
+    private IServiceScope _serviceScope;
+
+    private IActionResult _actionResult;
+
+    [SetUp]
+    public void Context()
+    {
+        _serviceProvider = new ServiceProviderHelper().BuildServiceProvider();
+        _serviceScope = _serviceProvider.CreateScope();
+
+        _p = new PersistenceTestHelper(_serviceProvider.GetService<NhibernateUnitOfWork>());
+        _p.BeginTransaction();
+
+        var manageShipsController = new ManageShipsControllerBuilder(_serviceProvider).Build();
+
+        _actionResult = manageShipsController.CreateNewShip();
+    }
+
+    [Test]
+    public void action_result_is_view_result()
+    {
+        _actionResult.ShouldBeOfType<ViewResult>();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _p.Rollback();
+        _serviceScope.Dispose();
+        _serviceProvider.Dispose();
+    }
+}
+```
+The test fails. Let's implement the controller method:
+```c#
+public IActionResult CreateNewShip()
+{
+    return View();
+}
+```
+The test passes. Now, let's add the view:
+```xml
+@model CoreDddShared.Commands.CreateNewShipCommand
+@{
+    ViewData["Title"] = "Create new ship";
+}
+
+<form method="post">
+    Ship Name:
+    <input asp-for="ShipName" />
+    <br />
+    Tonnage:
+    <input asp-for="Tonnage" />
+    <br />
+    <button type="submit" title="Clicking the button will execute a command to create a new ship">Create new ship</button>
+    <br />
+</form>
+``` 
+Now you can run the application, navigate to the *create new ship* page, and it should be possible to create a new ship. Let's slightly improve the *create new ship* page to show the last ship id created. We need to modify the existing test:
+```c#
+[Test]
+public void action_result_is_redirect_to_action_result_with_last_generated_ship_id_parameterer()
+{
+    _actionResult.ShouldBeOfType<RedirectToActionResult>();
+    var redirectToActionResult = (RedirectToActionResult) _actionResult;
+    redirectToActionResult.ControllerName.ShouldBeNull();
+    redirectToActionResult.ActionName.ShouldBe("CreateNewShip");
+    redirectToActionResult.RouteValues.ShouldNotBeNull();
+    redirectToActionResult.RouteValues.ContainsKey("lastCreatedShipId").ShouldBeTrue();
+    ((int)redirectToActionResult.RouteValues["lastCreatedShipId"]).ShouldBeGreaterThan(0);
+}
+```
+The test fails. Let's modify the controller method:
+```c#
+[HttpPost]
+public async Task<IActionResult> CreateNewShip(CreateNewShipCommand createNewShipCommand)
+{
+    var generatedShipId = 0;
+    _commandExecutor.CommandExecuted += args => generatedShipId = (int)args.Args;
+    await _commandExecutor.ExecuteAsync(createNewShipCommand);
+
+    return RedirectToAction("CreateNewShip", new { lastCreatedShipId = generatedShipId });
+}
+```
+The test passes. We need to modify the view to show the last created ship id:
+```xml
+    ...    
+    <button type="submit" title="Clicking the button will execute a command to create a new ship">Create new ship</button>
+    <br />
+    Last ShipId created: @Context.Request.Query["lastCreatedShipId"]
+</form>
+```
+Let's see how the London style TDD unit test for the `CreateNewShip` controller method would look like:
+```c#
+using FakeItEasy;
+...
+[TestFixture]
+public class when_creating_new_ship
+{
+    private IActionResult _actionResult;
+    private ICommandExecutor _commandExecutor;
+    private CreateNewShipCommand _createNewShipCommand;
+    private const int GeneratedShipId = 34;
+
+    [SetUp]
+    public async Task Context()
+    {
+        _createNewShipCommand = new CreateNewShipCommand
+        {
+            ShipName = "ship name",
+            Tonnage = 23.4m
+        };
+
+        _commandExecutor = A.Fake<ICommandExecutor>();
+        _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithGeneratedShipIdAsEventArgs();
+        var queryExecutor = A.Fake<IQueryExecutor>();
+        var manageShipsController = new ManageShipsController(_commandExecutor, queryExecutor);
+
+        _actionResult = await manageShipsController.CreateNewShip(_createNewShipCommand);
+    }
+
+    [Test]
+    public void command_is_executed()
+    {
+        A.CallTo(() => _commandExecutor.ExecuteAsync(_createNewShipCommand)).MustHaveHappened();
+    }
+
+    [Test]
+    public void action_result_is_redirect_to_action_result_with_last_generated_ship_id_parameterer()
+    {
+        _actionResult.ShouldBeOfType<RedirectToActionResult>();
+        var redirectToActionResult = (RedirectToActionResult)_actionResult;
+        redirectToActionResult.ControllerName.ShouldBeNull();
+        redirectToActionResult.ActionName.ShouldBe("CreateNewShip");
+        redirectToActionResult.RouteValues.ShouldNotBeNull();
+        redirectToActionResult.RouteValues.ContainsKey("lastCreatedShipId").ShouldBeTrue();
+        ((int)redirectToActionResult.RouteValues["lastCreatedShipId"]).ShouldBe(GeneratedShipId);
+    }
+
+    // This method is simulating "what would happen in real command executor"
+    private void _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithGeneratedShipIdAsEventArgs()
+    {
+        A.CallTo(() => _commandExecutor.ExecuteAsync(_createNewShipCommand)).Invokes(() =>
+        {
+            _commandExecutor.CommandExecuted +=
+                Raise.FreeForm<Action<CommandExecutedArgs>>.With(new CommandExecutedArgs { Args = GeneratedShipId });
+        });
+    }
+}
+```  
+This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, useless test adding no value.
+
+The source code of the new ASP.NET Core MVC create ship implementation using DDD and CQRQ is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/AspNetCoreMvcApp). In there you can find an implementation of a ship update page, and listing existing ships page.
 
 [Performance - publishing messages to bus] - segregation of queries and commands into their own transactions - smaller transactions, better performance;
-
-[Chicago style controller tests - discuss advantages and disadvantages of London style vs chicago style tests - add London examples as well] 
-   
+ 
 [docker hub - continuous deployment]
 
 [mention adding CI - e.g. appveyor - when multiple devs working on the project]
-
-[add a new CoreDdd wiki page about persistence unit tests]
 
 Steps:
 1. Rewrite the project by adding code inside the project - add CoreDdd, unit tests, integration tests
