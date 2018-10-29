@@ -31,7 +31,7 @@ If you decide to rewrite your legacy application using [DDD](https://stackoverfl
 
 ### <a name="example_legacy_app"></a>Example legacy application
 
-The example legacy application we are about to rewrite is a ship management application. This application can create new ships, update existing ships, and list existing ships. It's an ASP.NET Web Forms application, with code-behind page model, using database stored procedures to implement the server side business logic. The ASPX code to create a new ship might look like this:
+The example legacy application we are about to rewrite is a ship management application. This application can create new ships, update existing ships, and list existing ships. It's an ASP.NET Web Forms, .NET 4 application, with code-behind page model, using database stored procedures to implement the server side business logic. The ASPX code to create a new ship might look like this:
 ```aspx
 <form id="form1" runat="server">
     <div>
@@ -146,7 +146,7 @@ create table ShipHistory
 )
 ```
 
-The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application. 
+The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application. The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts).
 
 The problem with this approach is that the code - both page code-behind C# and SQL - are difficult to modify because it's difficult to [unit or integration test](https://stackoverflow.com/questions/5357601/whats-the-difference-between-unit-tests-and-integration-tests) code-behind and SQL. To be able to modify a code in the long run, one has to develop the code using TDD, and with the test coverage, it's possible to modify the code in a confident way that the previous functionality won't be broken.
 
@@ -156,13 +156,18 @@ The motivation to rewrite an application is usually the fact that the applicatio
 
 The first rewrite attempt will rewrite the ship creation code above using DDD and TDD, with the help of CoreDdd library. For this, we need to:
 
-- add CoreDdd into the legacy ASP.NET Web Forms application. This [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET) shows how to do it. 
 - create an [aggregate root](https://stackoverflow.com/questions/1958621/whats-an-aggregate-root) domain entity `Ship` which will be mapped into `Ship` database table.
 - create a domain entity `ShipHistory` which will be mapped into `ShipHistory` database table.
 - create `CreateNewShipCommand` and `CreateNewShipCommandHandler` to new up the `Ship` entity and persist it into a database.
 - add a new Web Forms page for the new ship creation code. The old Web Forms page will be intact, and it will be possible to compare the old and the new implementation.
+ 
+Let's implement the domain and command/command handler code in a new .NET Standard class library. We will manually multi-target .NET 4 and .NET Standard 2.0, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
+```xml
+<TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
+```  
+Add CoreDdd into the legacy ASP.NET Web Forms application by following this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET). Once done, move the NHiberate configurator class into the newly created class library.
 
-Let's assume CoreDdd has been added to the legacy ASP.NET Web Forms application. As we are doing TDD, let's add `Ship` aggregate root domain entity into the legacy project, with some data properties, without any code in the constructor or methods:
+As we are doing TDD, let's add `Ship` aggregate root domain entity into the newly created library, with some data properties, without any code in the constructor or methods:
 
 ```c#
 public class Ship : Entity, IAggregateRoot
@@ -175,7 +180,7 @@ public class Ship : Entity, IAggregateRoot
     public decimal Tonnage { get; private set; }
 }
 ```
-A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new class library test project for unit tests, add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
+A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Standard class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`; unit test library has to target .NET Core instead of .NET Standard) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
 ```c#
 [TestFixture]
 public class when_creating_new_ship
@@ -269,7 +274,7 @@ public class ShipHistory : Entity
     ...
 }
 ``` 
-The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new class library project for integration tests, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests. Use the NHibernate configurator created in legacy application by the previous [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET), use the SQL scripts above to create a test database. The persistence test for `Ship` class will look like this:
+The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new .NET Standard class library project for integration tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests. Use the NHibernate configurator created in the steps above and use the SQL scripts above to create a test database. The persistence test for `Ship` class will look like this:
 ```c#
 [TestFixture]
 public class when_persisting_ship
@@ -281,7 +286,7 @@ public class when_persisting_ship
     [SetUp]
     public void Context()
     {
-        _p = new PersistenceTestHelper(new MyNhibernateConfigurator()); 
+        _p = new PersistenceTestHelper(new CoreDddSharedNhibernateConfigurator()); 
         _p.BeginTransaction();
 
         _newShip = new Ship("ship name", tonnage: 23.4m);
@@ -318,9 +323,9 @@ public class when_persisting_ship
     }
 }
 ``` 
-When you run the persistence test, NHibernate would complain that it does not know about `Ship` entity (*NHibernate.MappingException : No persister for: Ship*). Modify the nhibernate configurator in the legacy application to map `Ship` entity:
+When you run the persistence test, NHibernate would complain that it does not know about `Ship` entity (*NHibernate.MappingException : No persister for: Ship*). Modify the NHibernate configurator to map `Ship` entity:
 ```c#
-public class MyNhibernateConfigurator : NhibernateConfigurator
+public class CoreDddSharedNhibernateConfigurator : NhibernateConfigurator
 {
     protected override Assembly[] GetAssembliesToMap()
     {
@@ -344,7 +349,7 @@ public class Ship : Entity, IAggregateRoot
 		...
     }
 
-    public virtual string Name { get; } // all public/protected properties marked as virtual
+    public virtual string Name { get; } // all public/protected properties and methods marked as virtual
     public virtual decimal Tonnage { get; }
     public virtual IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
@@ -459,7 +464,7 @@ public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipComma
     }
 }
 ```
-Command handler has a ship repository passed into a constructor as it will be needed to save the new ship into a database. It's derived from [`BaseCommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/BaseCommandHandler.cs), but instead of inheritance you could just implement [`ICommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/ICommandHandler.cs). Following the TDD, let's add a command handler test first:
+Command handler has a ship repository passed into a constructor as it will be needed to save the new ship into a database. It's derived from [`BaseCommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/BaseCommandHandler.cs), but instead of inheritance you could just implement [`ICommandHandler`](https://github.com/xhafan/coreddd/blob/master/src/CoreDdd/Commands/ICommandHandler.cs) (`BaseCommandHandler` adds some helper code for convenience). Following the TDD, let's add a command handler test first:
 ```c#
 [TestFixture]
 public class when_creating_new_ship
@@ -523,7 +528,7 @@ public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipComma
     }
 }
 ```
-The test passes. Please note that the command handler test should test just a happy path, any branching (=if) in the domain entity code should be covered by a domain tests and not command handler tests. Also, this test is [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test, which adds value of knowing that things work end to end. Let's see how [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test would look like (with the help of mocking library [FakeItEasy](https://www.nuget.org/packages/FakeItEasy)):
+The test passes. Please note that the command handler test should test just the command handler and the happy path of the domain code, any branching (=if) in the domain entity code should be covered by a domain tests and not command handler tests. Also, this test is [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test, which adds value of knowing that things work end to end. Let's see how [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) unit test would look like (with the help of mocking library [FakeItEasy](https://www.nuget.org/packages/FakeItEasy)):
 ```c#
 using FakeItEasy;
 
@@ -615,11 +620,15 @@ public partial class CreateShip : Page
     }
 }
 ```
+For an explanation why the code uses Service Locator pattern (`IoC.Resolve<>()`), please have look at this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET).
 
-
-As ASP.NET Web Forms the page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the samples above is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp).
+As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the new create ship implementation using DDD and CQRQ is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsCoreDdd). You can find there other two Web Form pages to update a ship, and to list existing ships. You can compare the new implementation to the [legacy one](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsAdoNet).
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
+
+Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created in the previous text.
+
+[Manually edit csproj, and set target frameworks to net40;netstandard2.0 (for test project to net40;netcoreapp2.1)]
 
 [implement example ASP.NET Web Forms app, executing some SP doing some crazy stuff with 2-3 tables, and show a sample rewrite over the same database using CoreDdd, DDD, **chicago TDD**] 
 
