@@ -10,6 +10,7 @@ published: false
 - [Example legacy application](#example_legacy_app)
 - [Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base](#rewrite_in_existing_app)
 - [Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application](#rewrite_as_new_app)
+- [Performance boost](#performance_boost)
 
 ### <a name="options_for_rewrite"></a>Options for rewrite
 
@@ -41,6 +42,9 @@ The example legacy application we are about to rewrite is a ship management appl
         Tonnage:
         <asp:TextBox ID="TonnageTextBox" runat="server"></asp:TextBox>
         <br />
+        IMO (International Maritime Organization) Number:
+        <asp:TextBox ID="ImoNumberTextBox" runat="server"></asp:TextBox>
+        <br />
         <asp:Button 
             ID="CreateShipButton" 
             runat="server" 
@@ -60,10 +64,13 @@ protected void CreateShipButton_Click(object sender, EventArgs e)
 {
     var shipName = ShipNameTextBox.Text;
     var tonnage = decimal.Parse(TonnageTextBox.Text);
+    var imoNumber = ImoNumberTextBox.Text;
 
     SqlCommandExecutor.ExecuteSqlCommand(cmd =>
     {
-        cmd.CommandText = $"EXEC CreateShip '{shipName}', {tonnage}";
+        const int hasImoNumberBeenVerified = 1;
+        cmd.CommandText = 
+            $"EXEC CreateShip '{shipName}', {tonnage}, '{imoNumber}'";
         var shipId = (int)cmd.ExecuteScalar();
         LastShipIdCreatedLabel.Text = $"{shipId}";
     });
@@ -84,13 +91,14 @@ public static class SqlCommandExecutor
     }
 }
 ```
-A user fills in ship datails (ship name, tonnage, etc.), clicks *create new ship* button in the UI and the code-behind C# code will use ADO.NET to execute database stored procedure named `CreateShip`. The stored procedure `CreateShip` might look like this (SQL Server):
+A user fills in ship datails (ship name, tonnage, IMO number etc.), clicks *create new ship* button in the UI and the code-behind C# code will use ADO.NET to execute database stored procedure named `CreateShip`. The stored procedure `CreateShip` might look like this (SQL Server):
 
 ```sql
 CREATE PROCEDURE CreateShip
 (
     @shipName nvarchar(max)
     , @tonnage decimal(19,5)
+    , @imoNumber nvarchar(max)
 )
 AS
 BEGIN
@@ -100,10 +108,12 @@ declare @shipId int
 INSERT INTO Ship (
     ShipName
     , Tonnage
+    , ImoNumber
     )
 VALUES (
     @shipName
     , @tonnage
+    , @imoNumber
     )
 	
 SELECT @shipId = SCOPE_IDENTITY()
@@ -132,6 +142,7 @@ create table Ship
     ShipId int IDENTITY(1,1) NOT NULL
     , ShipName nvarchar(max)
     , Tonnage decimal(19,5)
+    , ImoNumber nvarchar(max)
     CONSTRAINT PK_Ship_ShipId PRIMARY KEY CLUSTERED (ShipId ASC)
 )
 
@@ -145,10 +156,11 @@ create table ShipHistory
     CONSTRAINT PK_ShipHistory_ShipHistoryId PRIMARY KEY CLUSTERED (ShipHistoryId ASC)
 )
 ```
+The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application.
 
-The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application. The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts). To open the solution, you will need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher.
+The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts). To open the solution, you will need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher. The solution uses a SQL Server LocalDB database. Here's how to [install SQL Server LocalDB](https://stackoverflow.com/questions/42774739/how-to-install-localdb-2016-along-with-visual-studio-2017). You need to manually create two databases `Legacy` and `LegacyTest`, the application will automatically build the database using SQL scripts using [DatabaseBuilder](https://github.com/xhafan/databasebuilder/wiki). 
 
-The problem with this approach is that the code - both page code-behind C# and SQL - are difficult to modify because it's difficult to [unit or integration test](https://stackoverflow.com/questions/5357601/whats-the-difference-between-unit-tests-and-integration-tests) code-behind and SQL. To be able to modify a code in the long run, one has to develop the code using TDD, and with the test coverage, it's possible to modify the code in a confident way that the previous functionality won't be broken.
+One of the problems with Web Forms code-behind and business logic inside SQL stored procedures is that the code - both page code-behind C# and SQL - are difficult to modify because it's difficult to [unit or integration test](https://stackoverflow.com/questions/5357601/whats-the-difference-between-unit-tests-and-integration-tests) code-behind and SQL. To be able to modify a code in the long run, one has to develop the code using TDD, and with the test coverage, it's possible to modify the code in a confident way that the previous functionality won't be broken.
 
 The motivation to rewrite an application is usually the fact that the application is not maintainable, and any change to the application causes a new set of bugs. Let's try to rewrite the code in a better maintainable way, using DDD and TDD.
 
@@ -178,6 +190,7 @@ public class Ship : Entity, IAggregateRoot
 
     public string Name { get; private set; }
     public decimal Tonnage { get; private set; }
+    public string ImoNumber { get; protected set; }
 }
 ```
 A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
@@ -190,7 +203,7 @@ public class when_creating_new_ship
     [SetUp]
     public void Context()
     {
-        _ship = new Ship("ship name", tonnage: 23.4m);
+        _ship = new Ship("ship name", tonnage: 23.4m, imoNumber: "IMO 12345");
     }
 
     [Test]
@@ -198,6 +211,7 @@ public class when_creating_new_ship
     {
         _ship.Name.ShouldBe("ship name");
         _ship.Tonnage.ShouldBe(23.4m);
+        _ship.ImoNumber.ShouldBe("IMO 12345");
     }
 }
 ```
@@ -205,14 +219,16 @@ This test would fail as the ship name is not populated. Now that we have a faili
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    public Ship(string name, decimal tonnage)
+    public Ship(string name, decimal tonnage, string imoNumber)
     {
         Name = name;
         Tonnage = tonnage;
+        ImoNumber = imoNumber;
     }
 
     public string Name { get; private set; }
     public decimal Tonnage { get; private set; }
+    public string ImoNumber { get; private set; }
 }
 ```
 The test passes. Now, it should create a `ShipHistory` record when creating a new ship. Let's add a `ShipHistory` entity:
@@ -223,9 +239,9 @@ public class ShipHistory : Entity
     {
     }
 
-    public string Name { get; }
-    public decimal Tonnage { get; }
-    public DateTime CreatedOn { get; }
+    public string Name { get; private set; }
+    public decimal Tonnage { get; private set; }
+    public DateTime CreatedOn { get; private set; }
 }
 ```
 You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a collection of `ShipHistory` records into `Ship`:
@@ -255,7 +271,7 @@ public class Ship : Entity, IAggregateRoot
 {
     private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
 
-    public Ship(string name, decimal tonnage)
+    public Ship(string name, decimal tonnage, string imoNumber)
     {
         ...
         _shipHistories.Add(new ShipHistory(name, tonnage));
@@ -289,7 +305,7 @@ public class when_persisting_ship
         _p = new PersistenceTestHelper(new CoreDddSharedNhibernateConfigurator()); 
         _p.BeginTransaction();
 
-        _newShip = new Ship("ship name", tonnage: 23.4m);
+        _newShip = new Ship("ship name", tonnage: 23.4m, imoNumber: "IMO 12345");
 
         _p.Save(_newShip);
         _p.Clear();
@@ -314,6 +330,7 @@ public class when_persisting_ship
     {
         _persistedShip.Name.ShouldBe("ship name");
         _persistedShip.Tonnage.ShouldBe(23.4m);
+        _persistedShip.ImoNumber.ShouldBe("IMO 12345");
     }
 
     [TearDown]
@@ -335,22 +352,24 @@ public class CoreDddSharedNhibernateConfigurator : NhibernateConfigurator
 ```
 When you run the test now, NHibernate would complain with these errors:
 - *Ship: type should have a visible (public or protected) no-argument constructor*
-- *Ship: method get_Name should be 'public/protected virtual' or 'protected internal virtual'* 
+- *Ship: method get_Name should be 'public/protected virtual' or 'protected internal virtual'*
+- *Ship: method set_Name should be 'public/protected virtual' or 'protected internal virtual'*
 
 NHibernate can do its [ORM](https://www.tutorialspoint.com/nhibernate/nhibernate_orm.htm) magic when entities have no-argument constructors, and public/protected properties and methods are marked as virtual. Let's modify `Ship` and `ShipHistory` entities:
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-	...
+    ...
     protected Ship() { } // no-argument constructor
 
-    public Ship(string name, decimal tonnage)
+    public Ship(string name, decimal tonnage, string imoNumber)
     {
-		...
+        ...
     }
 
-    public virtual string Name { get; } // all public/protected properties and methods marked as virtual
-    public virtual decimal Tonnage { get; }
+    public virtual string Name { get; protected set; } // all public/protected properties and methods marked as virtual
+    public virtual decimal Tonnage { get; protected set; } // all setters are protected
+    public virtual string ImoNumber { get; protected set; }
     public virtual IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
 ``` 
@@ -406,7 +425,7 @@ public class when_persisting_ship_history
         _p = new PersistenceTestHelper(new MyNhibernateConfigurator());
         _p.BeginTransaction();
 
-        _newShip = new Ship("ship name", tonnage: 23.4m);
+        _newShip = new Ship("ship name", tonnage: 23.4m, imoNumber: "IMO 12345");
 
         _p.Save(_newShip);
 
@@ -443,12 +462,13 @@ public class when_persisting_ship_history
     }
 }
 ```
-These tests should pass straight away. The domain code covered by unit tests and integration tests is complete. Now we need to add a command `CreateNewShipCommand`:
+These tests should pass straight away. The domain code covered by unit tests and integration tests is complete. Now we need to add a command `CreateNewShipCommand` implementing `ICommand` marker interface:
 ```c#
 public class CreateNewShipCommand : ICommand
 {
     public string ShipName { get; set; }
     public decimal Tonnage { get; set; }
+    public string ImoNumber { get; set; }
 }
 ```
 And a command handler `CreateNewShipCommandHandler` without any implementation:
@@ -482,7 +502,8 @@ public class when_creating_new_ship
         var createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = "ship name",
-            Tonnage = 23.45678m
+            Tonnage = 23.45678m,
+            ImoNumber = "IMO 765432"
         };
         var createNewShipCommandHandler = new CreateNewShipCommandHandler(new NhibernateRepository<Ship>(_p.UnitOfWork));
         createNewShipCommandHandler.CommandExecuted += args => _generatedShipId = (int) args.Args;
@@ -499,6 +520,7 @@ public class when_creating_new_ship
         _persistedShip.ShouldNotBeNull();
         _persistedShip.Name.ShouldBe("ship name");
         _persistedShip.Tonnage.ShouldBe(23.45678m);
+        _persistedShip.ImoNumber.ShouldBe("IMO 765432");
     }
 
     [TearDown]
@@ -521,7 +543,7 @@ public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipComma
 
     public override void Execute(CreateNewShipCommand command)
     {
-        var newShip = new Ship(command.ShipName, command.Tonnage);
+        var newShip = new Ship(command.ShipName, command.Tonnage, command.ImoNumber);
         _shipRepository.Save(newShip);
 
         RaiseCommandExecutedEvent(new CommandExecutedArgs { Args = newShip.Id });
@@ -544,7 +566,8 @@ public class when_creating_new_ship
         var createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = "ship name",
-            Tonnage = 23.45678m
+            Tonnage = 23.45678m,
+            ImoNumber = "IMO 12345"
         };
         _shipRepository = A.Fake<IRepository<Ship>>();
         A.CallTo(() => _shipRepository.Save(A<Ship>._)).Invokes(x =>
@@ -568,6 +591,7 @@ public class when_creating_new_ship
     {
         p.Name.ShouldBe("ship name");
         p.Tonnage.ShouldBe(23.45678m);
+        p.ImoNumber.ShouldBe("IMO 12345");
         return true;
     }
 
@@ -603,7 +627,8 @@ public partial class CreateShip : Page
         var createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = ShipNameTextBox.Text,
-            Tonnage = decimal.Parse(TonnageTextBox.Text)
+            Tonnage = decimal.Parse(TonnageTextBox.Text),
+            ImoNumber = ImoNumberTextBox.Text
         };
 
         _commandExecutor.CommandExecuted += args =>
@@ -626,7 +651,7 @@ As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will i
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
-Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created for the Web Forms application (see above). The application will also reuse the domain code and the create new ship command/command handler.
+Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created for the Web Forms application (see above). The application will also partially reuse the domain code and the create new ship command/command handler.
 
 Create a new controller `ManageShipsController` with an empty method `CreateNewShip`:
 ```c#
@@ -671,11 +696,13 @@ public class when_creating_new_ship
         var createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = "ship name",
-            Tonnage = 23.4m
+            Tonnage = 23.4m,
+            ImoNumber = "IMO 12345"
         };
         _actionResult = await manageShipsController.CreateNewShip(createNewShipCommand);
 
         _p.Flush();
+        _p.Clear();
     }
 
     [Test]
@@ -762,7 +789,7 @@ public class ManageShipsController : Controller
     }
 }
 ``` 
-The test passes. Let's implement controller method to view `CreateNewShip` page:
+The test passes. Let's implement controller method to view `CreateNewShip` view:
 ```c#
 public class ManageShipsController : Controller
 {
@@ -821,7 +848,9 @@ public IActionResult CreateNewShip()
     return View();
 }
 ```
-The test passes. Now, let's add the view:
+The test passes. You might wonder why adding this complex test for a method returning just a view. Well, first, the test is complex because lot of stuff need to happen first before the controller action method can be executed. Second, the test complexity could be extracted into a test base class, and shared between `ManageShipsController` tests, so the test would not be that complex. And third, another developer might add some behaviour in the future, so it's handy to have the test ready.  
+ 
+Now, let's add the view:
 ```xml
 @model CoreDddShared.Commands.CreateNewShipCommand
 @{
@@ -835,11 +864,13 @@ The test passes. Now, let's add the view:
     Tonnage:
     <input asp-for="Tonnage" />
     <br />
-    <button type="submit" title="Clicking the button will execute a command to create a new ship">Create new ship</button>
+    IMO (International Maritime Organization) number:
+    <input asp-for="ImoNumber" />
     <br />
+    <button type="submit" title="Clicking the button will execute a command to create a new ship">Create new ship</button>
 </form>
 ``` 
-Now you can run the application, navigate to the *create new ship* page, and it should be possible to create a new ship. Let's slightly improve the *create new ship* page to show the last ship id created. We need to modify the existing test:
+Now you can run the application, navigate to the *create new ship* view, and it should be possible to create a new ship. Let's slightly improve the *create new ship* view to show the last ship id created. We need to modify the existing test:
 ```c#
 [Test]
 public void action_result_is_redirect_to_action_result_with_last_generated_ship_id_parameterer()
@@ -873,7 +904,7 @@ The test passes. We need to modify the view to show the last created ship id:
     Last ShipId created: @Context.Request.Query["lastCreatedShipId"]
 </form>
 ```
-Let's see how the London style TDD unit test for the `CreateNewShip` controller method would look like:
+Let's see how the London style TDD unit test for the `CreateNewShip` controller method would look like so we can compare it with the Chicago style TDD:
 ```c#
 using FakeItEasy;
 ...
@@ -891,7 +922,8 @@ public class when_creating_new_ship
         _createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = "ship name",
-            Tonnage = 23.4m
+            Tonnage = 23.4m,
+            ImoNumber = "IMO 12345"
         };
 
         _commandExecutor = A.Fake<ICommandExecutor>();
@@ -931,17 +963,184 @@ public class when_creating_new_ship
     }
 }
 ```  
-This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, it is a useless test adding no value.
+This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, it is a useless test adding no value as one needs to simulate expected behaviour of other components.
 
-The source code of the new ASP.NET Core MVC create ship implementation using DDD and CQRQ is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/AspNetCoreMvcApp). In there you can find an implementation of a ship update page, and listing existing ships page.
+The source code of the new ASP.NET Core MVC create ship implementation using DDD and CQRS is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/AspNetCoreMvcApp). In there you can find an implementation of a ship update view, and listing existing ships view.
 
-[Add a link to domain events with an explanation that this feature would make transactions even smaller. Give example of the usage - logging, notification to some other system that a ship was created, etc. Basically everything what does not have to be done to handle the request, can be delayed using domain events].
+### <a name="performance_boost"></a>Performance boost
+If your application is doing too much when handling a request, and some of the processing can be deferred to later time, you can utilize [domain events](https://github.com/xhafan/coreddd/wiki/Domain-events) and [publish event messages over a message bus from domain event handlers](https://github.com/xhafan/coreddd/wiki/Domain-events#publishing-event-messages-over-a-message-bus-from-domain-event-handlers), and handle the event messages in a separate process and transaction. Deferring some processing to a later time can make the main request transaction smaller, thus making the request handling shorter. Here are some examples of a processing which can be deferred:
 
-[Add a help how to install local DB sql server - check some visual studio desktop development settings. Paste there an example of hibernate.cfg.xml using the localdb sql server]
-
-[Performance - publishing messages to bus] - segregation of queries and commands into their own transactions - smaller transactions, better performance;
+- subsequent domain processing (e.g. when creating an order in an eshop, the billing PDF generation can be done later)  
+- sending email
+- accessing other web services
  
-[docker hub - continuous deployment]
+Let's imagine that when a ship is created we need to verify it's IMO (International Maritime Organization) number using a web service. We won't be accessing a real web service, we will just create a new service `InternationalMaritimeOrganizationVerifier`. Here is a version for .NET 4 Web Forms app:
+```c#
+public class InternationalMaritimeOrganizationVerifier : IInternationalMaritimeOrganizationVerifier
+{
+    public bool IsImoNumberValid(string imoNumber)
+    {
+        // implement ship verification using International Maritime Organization web api
+        Thread.Sleep(4000); // sleep 4 seconds to simulate slow web request        
+        return true;
+    }
+}
+```
+Here is an async version for ASP.NET Core MVC app:
+```c#
+public class InternationalMaritimeOrganizationVerifier : IInternationalMaritimeOrganizationVerifier
+{
+    public async Task<bool> IsImoNumberValid(string imoNumber)
+    {
+        // implement ship verification using International Maritime Organization web api
+        await Task.Delay(4000); // sleep 4 seconds to simulate slow web request
+        return true;
+    }
+}
+```
+Now, when you call the service to verify the IMO number, it will take simulated 4 seconds to return. If you call it directly from the main web request when creating a new ship, the whole request would take 4 seconds to complete. Here is the an example of how it could be done for the Web Forms app. The `Ship` entity:
+```c#
+public class Ship : Entity, IAggregateRoot
+{
+    ...
+    public virtual string ImoNumber { get; protected set; }
+    public virtual bool HasImoNumberBeenVerified { get; protected set; }
+    public virtual bool IsImoNumberValid { get; protected set; }
+
+    ...
+
+    public virtual void VerifyImoNumber(IInternationalMaritimeOrganizationVerifier internationalMaritimeOrganizationVerifier)
+    {
+        IsImoNumberValid = internationalMaritimeOrganizationVerifier.IsImoNumberValid(ImoNumber);
+        HasImoNumberBeenVerified = true;
+    }
+}
+```
+The command handler:
+```c#
+public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipCommand>
+{
+    private readonly IRepository<Ship> _shipRepository;
+    private readonly IInternationalMaritimeOrganizationVerifier _internationalMaritimeOrganizationVerifier;
+
+    public CreateNewShipCommandHandler(
+        IRepository<Ship> shipRepository,
+        IInternationalMaritimeOrganizationVerifier internationalMaritimeOrganizationVerifier
+        )
+    {
+        _internationalMaritimeOrganizationVerifier = internationalMaritimeOrganizationVerifier;
+        _shipRepository = shipRepository;
+    }
+
+    public override void Execute(CreateNewShipCommand command)
+    {
+        var newShip = new Ship(command.ShipName, command.Tonnage, command.ImoNumber);
+        newShip.VerifyImoNumber(_internationalMaritimeOrganizationVerifier);
+        _shipRepository.Save(newShip);
+
+        RaiseCommandExecutedEvent(new CommandExecutedArgs { Args = newShip.Id });
+    }
+}
+```
+The code samples are available [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Domain/Ship.cs#L54) and [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Commands/CreateNewShipCommandHandler.cs#L30).
+
+A better way, which would not block the web request, would be to raise a domain event that a ship has been created, and publish a domain event message to a message bus, and handle the IMO number verification in another process subscribed to handle domain event messages. Here is the an example of how it could be done for the ASP.NET Core MVC app. The `Ship` entity:
+```c#
+public class Ship : Entity, IAggregateRoot
+{
+    ...
+    public virtual string ImoNumber { get; protected set; }
+    public virtual bool HasImoNumberBeenVerified { get; protected set; }
+    public virtual bool IsImoNumberValid { get; protected set; }
+
+    ...
+
+    public virtual void OnCreationCompleted()
+    {
+        if (Id == default(int)) throw new Exception("Id has not been assigned yet - entity creation has not been completed yet");
+
+        DomainEvents.RaiseEvent(new ShipCreatedDomainEvent { ShipId = Id });
+    }
+
+    public virtual async Task VerifyImoNumber(IInternationalMaritimeOrganizationVerifier internationalMaritimeOrganizationVerifier)
+    {
+        IsImoNumberValid = await internationalMaritimeOrganizationVerifier.IsImoNumberValid(ImoNumber);
+        HasImoNumberBeenVerified = true;
+    }
+}
+```  
+The command handler:
+```c#
+public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipCommand>
+{
+    private readonly IRepository<Ship> _shipRepository;
+
+    public CreateNewShipCommandHandler(IRepository<Ship> shipRepository)
+    {
+        _shipRepository = shipRepository;
+    }
+    
+    public override async Task ExecuteAsync(CreateNewShipCommand command)
+    {
+        var newShip = new Ship(command.ShipName, command.Tonnage, command.ImoNumber);
+        await _shipRepository.SaveAsync(newShip); // Save will generate Id
+        newShip.OnCreationCompleted();
+
+        RaiseCommandExecutedEvent(new CommandExecutedArgs { Args = newShip.Id });
+    }    
+}
+```
+The domain event handler (using [Rebus](https://www.nuget.org/packages/Rebus/) message bus):
+```c#
+public class ShipCreatedDomainEventHandler : IDomainEventHandler<ShipCreatedDomainEvent>
+{
+    private readonly ISyncBus _bus;
+
+    public ShipCreatedDomainEventHandler(ISyncBus bus)
+    {
+        _bus = bus;
+    }
+
+    public void Handle(ShipCreatedDomainEvent domainEvent)
+    {
+        _bus.Publish(new ShipCreatedDomainEventMessage {ShipId = domainEvent.ShipId});
+    }
+}
+```
+The domain event message handler (using [Rebus](https://www.nuget.org/packages/Rebus/), the handler executed in a different process asynchronously):
+```c#
+public class VerifyImoNumberShipCreatedDomainEventMessageHandler : IHandleMessages<ShipCreatedDomainEventMessage>
+{
+    private readonly IRepository<Ship> _shipRepository;
+    private readonly IInternationalMaritimeOrganizationVerifier _internationalMaritimeOrganizationVerifier;
+
+    public VerifyImoNumberShipCreatedDomainEventMessageHandler(
+        IRepository<Ship> shipRepository,
+        IInternationalMaritimeOrganizationVerifier internationalMaritimeOrganizationVerifier
+        )
+    {
+        _shipRepository = shipRepository;
+        _internationalMaritimeOrganizationVerifier = internationalMaritimeOrganizationVerifier;
+    }
+
+    public async Task Handle(ShipCreatedDomainEventMessage message)
+    {
+        var ship = await _shipRepository.GetAsync(message.ShipId);
+        await ship.VerifyImoNumber(_internationalMaritimeOrganizationVerifier);
+    }
+}
+```
+Implementing the IMO number verification this way, the web request can complete immediately, and the IMO number will be eventually verified at some point later, usually almost immediately after the web request. The 4 seconds simulated wait in `InternationalMaritimeOrganizationVerifier` will block the domain event message handler.  
+
+The code samples are available here:
+- [Ship](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Domain/Ship.cs#L41) entity
+- [command handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Commands/CreateNewShipCommandHandler.cs#L9)
+- [domain event handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Domain/Events/ShipCreatedDomainEventHandler.cs)
+- [domain event message handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/VerifyImoNumberShipCreatedDomainEventMessageHandler.cs)
+
+[Implement sending a command to ServiceApp and web app would wait for reply]
+
+[docker hub - continuous deployment - tutorial to deploy it with sql server in docker on linux]
 
 [mention adding CI - e.g. appveyor - when multiple devs working on the project]
 
@@ -950,3 +1149,4 @@ Steps:
 2. Add a new ASP.NET Core project and re-use code added in step 1.
 3. Add docker support, deploy alpine linux image of the project to docker hub
 4. Run the app inside docker linux, docker pull to do an application update   
+5. 
