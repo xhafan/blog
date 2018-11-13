@@ -156,7 +156,7 @@ create table ShipHistory
     CONSTRAINT PK_ShipHistory_ShipHistoryId PRIMARY KEY CLUSTERED (ShipHistoryId ASC)
 )
 ```
-The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns generated ship id into the application.
+The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns created ship id into the application.
 
 The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts). To open the solution, you will need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher. The solution uses a SQL Server LocalDB database. Here's how to [install SQL Server LocalDB](https://stackoverflow.com/questions/42774739/how-to-install-localdb-2016-along-with-visual-studio-2017). You need to manually create two databases `Legacy` and `LegacyTest`, the application will automatically build the database using SQL scripts using [DatabaseBuilder](https://github.com/xhafan/databasebuilder/wiki). 
 
@@ -491,7 +491,7 @@ public class when_creating_new_ship
 {
     private PersistenceTestHelper _p;
     private Ship _persistedShip;
-    private int _generatedShipId;
+    private int _createdShipId;
 
     [SetUp]
     public void Context()
@@ -506,12 +506,12 @@ public class when_creating_new_ship
             ImoNumber = "IMO 765432"
         };
         var createNewShipCommandHandler = new CreateNewShipCommandHandler(new NhibernateRepository<Ship>(_p.UnitOfWork));
-        createNewShipCommandHandler.CommandExecuted += args => _generatedShipId = (int) args.Args;
+        createNewShipCommandHandler.CommandExecuted += args => _createdShipId = (int) args.Args;
         createNewShipCommandHandler.Execute(createNewShipCommand);
 
         _p.Clear();
 
-        _persistedShip = _p.Get<Ship>(_generatedShipId);
+        _persistedShip = _p.Get<Ship>(_createdShipId);
     }
 
     [Test]
@@ -557,7 +557,7 @@ using FakeItEasy;
 [TestFixture]
 public class when_creating_new_ship
 {
-    private int _generatedShipId;
+    private int _createdShipId;
     private IRepository<Ship> _shipRepository;
 
     [SetUp]
@@ -577,7 +577,7 @@ public class when_creating_new_ship
             shipPassedAsParameter.SetPrivateProperty("Id", 23);
         });
         var createNewShipCommandHandler = new CreateNewShipCommandHandler(_shipRepository);
-        createNewShipCommandHandler.CommandExecuted += args => _generatedShipId = (int) args.Args;
+        createNewShipCommandHandler.CommandExecuted += args => _createdShipId = (int) args.Args;
         createNewShipCommandHandler.Execute(createNewShipCommand);
     }
 
@@ -598,7 +598,7 @@ public class when_creating_new_ship
     [Test]
     public void command_executed_event_is_raised_with_stubbed_ship_id()
     {
-        _generatedShipId.ShouldBe(23);
+        _createdShipId.ShouldBe(23);
     }
 }
 public static class ObjectExtensions
@@ -633,8 +633,8 @@ public partial class CreateShip : Page
 
         _commandExecutor.CommandExecuted += args =>
         {
-            var generatedShipId = (int)args.Args;
-            LastShipIdCreatedLabel.Text = $"{generatedShipId}";
+            var createdShipId = (int)args.Args;
+            LastShipIdCreatedLabel.Text = $"{createdShipId}";
         };
         _commandExecutor.Execute(createNewShipCommand);
     }
@@ -873,7 +873,7 @@ Now, let's add the view:
 Now you can run the application, navigate to the *create new ship* view, and it should be possible to create a new ship. Let's slightly improve the *create new ship* view to show the last ship id created. We need to modify the existing test:
 ```c#
 [Test]
-public void action_result_is_redirect_to_action_result_with_last_generated_ship_id_parameterer()
+public void action_result_is_redirect_to_action_result_with_last_created_ship_id_parameterer()
 {
     _actionResult.ShouldBeOfType<RedirectToActionResult>();
     var redirectToActionResult = (RedirectToActionResult) _actionResult;
@@ -889,11 +889,11 @@ The test fails. Let's modify the controller method:
 [HttpPost]
 public async Task<IActionResult> CreateNewShip(CreateNewShipCommand createNewShipCommand)
 {
-    var generatedShipId = 0;
-    _commandExecutor.CommandExecuted += args => generatedShipId = (int)args.Args;
+    var createdShipId = 0;
+    _commandExecutor.CommandExecuted += args => createdShipId = (int)args.Args;
     await _commandExecutor.ExecuteAsync(createNewShipCommand);
 
-    return RedirectToAction("CreateNewShip", new { lastCreatedShipId = generatedShipId });
+    return RedirectToAction("CreateNewShip", new { lastCreatedShipId = createdShipId });
 }
 ```
 The test passes. We need to modify the view to show the last created ship id:
@@ -914,7 +914,7 @@ public class when_creating_new_ship
     private IActionResult _actionResult;
     private ICommandExecutor _commandExecutor;
     private CreateNewShipCommand _createNewShipCommand;
-    private const int GeneratedShipId = 34;
+    private const int CreatedShipId = 34;
 
     [SetUp]
     public async Task Context()
@@ -927,7 +927,7 @@ public class when_creating_new_ship
         };
 
         _commandExecutor = A.Fake<ICommandExecutor>();
-        _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithGeneratedShipIdAsEventArgs();
+        _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithCreatedShipIdAsEventArgs();
         var queryExecutor = A.Fake<IQueryExecutor>();
         var manageShipsController = new ManageShipsController(_commandExecutor, queryExecutor);
 
@@ -941,7 +941,7 @@ public class when_creating_new_ship
     }
 
     [Test]
-    public void action_result_is_redirect_to_action_result_with_last_generated_ship_id_parameterer()
+    public void action_result_is_redirect_to_action_result_with_last_created_ship_id_parameterer()
     {
         _actionResult.ShouldBeOfType<RedirectToActionResult>();
         var redirectToActionResult = (RedirectToActionResult)_actionResult;
@@ -949,16 +949,16 @@ public class when_creating_new_ship
         redirectToActionResult.ActionName.ShouldBe("CreateNewShip");
         redirectToActionResult.RouteValues.ShouldNotBeNull();
         redirectToActionResult.RouteValues.ContainsKey("lastCreatedShipId").ShouldBeTrue();
-        ((int)redirectToActionResult.RouteValues["lastCreatedShipId"]).ShouldBe(GeneratedShipId);
+        ((int)redirectToActionResult.RouteValues["lastCreatedShipId"]).ShouldBe(CreatedShipId);
     }
 
     // This method is simulating "what would happen in real command executor"
-    private void _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithGeneratedShipIdAsEventArgs()
+    private void _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithCreatedShipIdAsEventArgs()
     {
         A.CallTo(() => _commandExecutor.ExecuteAsync(_createNewShipCommand)).Invokes(() =>
         {
             _commandExecutor.CommandExecuted +=
-                Raise.FreeForm<Action<CommandExecutedArgs>>.With(new CommandExecutedArgs { Args = GeneratedShipId });
+                Raise.FreeForm<Action<CommandExecutedArgs>>.With(new CommandExecutedArgs { Args = CreatedShipId });
         });
     }
 }
@@ -1139,6 +1139,10 @@ The code samples are available here:
 - [domain event message handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/VerifyImoNumberShipCreatedDomainEventMessageHandler.cs)
 
 [Implement sending a command to ServiceApp and web app would wait for reply]
+
+[Show example of how to re-plug ship creation to the more reliable version]
+
+[Moving failed messages back to the queue once the error is fixed]
 
 [docker hub - continuous deployment - tutorial to deploy it with sql server in docker on linux]
 
