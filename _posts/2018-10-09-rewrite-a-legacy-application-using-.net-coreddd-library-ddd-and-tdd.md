@@ -11,6 +11,7 @@ published: false
 - [Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base](#rewrite_in_existing_app)
 - [Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application](#rewrite_as_new_app)
 - [Performance boost](#performance_boost)
+- [Reliable command handling](#reliable_command_handling)
 
 ### <a name="options_for_rewrite"></a>Options for rewrite
 
@@ -1136,21 +1137,102 @@ The code samples are available here:
 - [Ship](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Domain/Ship.cs#L41) entity
 - [command handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Commands/CreateNewShipCommandHandler.cs#L9)
 - [domain event handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/CoreDddShared/Domain/Events/ShipCreatedDomainEventHandler.cs)
-- [domain event message handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/VerifyImoNumberShipCreatedDomainEventMessageHandler.cs)
+- [domain event message handler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/MessageHandlers/VerifyImoNumberShipCreatedDomainEventMessageHandler.cs)
 
-[Implement sending a command to ServiceApp and web app would wait for reply]
+### <a name="reliable_command_handling"></a>Reliable command handling
+So far a command is handled once within the web application process. In the case of a temporary error like a database deadlock, a database timeout, a network connectivity error to a database server, etc., or a permanent error like an application bug, the command handling fails and an error message is shown to a user. For both temporary and permanent errors, the user needs to repeat the action which would send a new command (for permanent errors, the user needs to wait for the application fix). This can be improved by a web application sending the command over a message bus to a service application, where it can be handled reliably with multiple re-tries which could handle the temporary errors automatically be simply re-trying command handling again couple of times. In the case of an application bug, the command handling would fail all handling re-tries, and the command message would be moved into an error message queue. Once the bug is fixed and a new version of the service application is deployed, the command message can be moved back into the input message queue and the command handling would succeed - the user would not have to repeat the action.
 
-[Show example of how to re-plug ship creation to the more reliable version]
+Let's see an example of a reliable version of a new ship creation (using packages [Rebus](https://www.nuget.org/packages/Rebus/) and [Rebus.Async](https://www.nuget.org/packages/Rebus.Async)): 
+```c#
+public class ManageShipsController : Controller
+{
+    ...
+    private readonly IBusRequestSender _busRequestSender;
 
-[Moving failed messages back to the queue once the error is fixed]
+    public ManageShipsController(
+        ...
+        IBusRequestSender busRequestSender
+        )
+    {
+        ...
+        _busRequestSender = busRequestSender;
+    }
 
-[docker hub - continuous deployment - tutorial to deploy it with sql server in docker on linux]
+    ...
 
-[mention adding CI - e.g. appveyor - when multiple devs working on the project]
+    [HttpPost]
+    public async Task<IActionResult> CreateNewShipReliably(CreateNewShipCommand createNewShipCommand)
+    {
+        var reply = await _busRequestSender.SendRequest<CreateNewShipCommandReply>(createNewShipCommand);
 
-Steps:
-1. Rewrite the project by adding code inside the project - add CoreDdd, unit tests, integration tests
-2. Add a new ASP.NET Core project and re-use code added in step 1.
-3. Add docker support, deploy alpine linux image of the project to docker hub
-4. Run the app inside docker linux, docker pull to do an application update   
-5. 
+        return RedirectToAction("CreateNewShip", new { lastCreatedShipId = reply.CreatedShipId });
+    }
+}
+
+public interface IBusRequestSender
+{
+    Task<TReply> SendRequest<TReply>(object message);
+}
+
+public class BusRequestSender : IBusRequestSender
+{
+    private readonly IBus _bus;
+    private readonly double _timeoutInSeconds;
+
+    public BusRequestSender(IBus bus, double timeoutInSeconds = 30)
+    {
+        _timeoutInSeconds = timeoutInSeconds;
+        _bus = bus;
+    }
+
+    public async Task<TReply> SendRequest<TReply>(object message)
+    {
+        return await _bus.SendRequest<TReply>(message, timeout: TimeSpan.FromSeconds(_timeoutInSeconds));
+    }
+}
+
+```
+The new controller method `CreateNewShipReliably` just sends the command over a message bus and waits for a reply. `BusRequestSender` is a small wrapper over Rebus.Async static extension method `SendRequest` to make the code testable. We've done enough TDD for today, so the London style TDD test for the controller method is available [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/AspNetCoreMvcApp.Tests/Controllers/ManageShipsControllers/when_creating_new_ship_reliably.cs) for those interested. Just a small note regarding the test - in my opinion the controller method implementation is so dummy, that I'm inclined to ignore testing it completely.
+The command message handler in the service application would look like this:
+```c#
+public class CreateNewShipCommandMessageHandler : IHandleMessages<CreateNewShipCommand>
+{
+    private readonly ICommandExecutor _commandExecutor;
+    private readonly IBus _bus;
+
+    public CreateNewShipCommandMessageHandler(
+        ICommandExecutor commandExecutor,
+        IBus bus
+    )
+    {
+        _bus = bus;
+        _commandExecutor = commandExecutor;
+    }
+
+    public async Task Handle(CreateNewShipCommand command)
+    {
+        var createdShipId = 0;
+        _commandExecutor.CommandExecuted += args => createdShipId = (int)args.Args;
+        await _commandExecutor.ExecuteAsync(command);
+
+        await _bus.Reply(new CreateNewShipCommandReply {CreatedShipId = createdShipId});
+    }
+}
+```
+The test for the command message handler is available [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp.IntegrationTests/MessageHandlers/CreateNewShipCommandMessageHandlers/when_handling_create_new_ship_command_message.cs). This command message handler implementation is reusing existing `CreateNewShipCommandHandler` via command executor, but it would be possible to implement the command handling logic directly here in the command message handler, and to get rid of `CreateNewShipCommandHandler`.
+To plug the new reliable command handling into the AspNetCoreMvcApp, just submit the create a new ship HTML form into the new action method `CreateNewShipReliably` (*CreateNewShip.cshtml*):
+```xml
+...
+<form method="post" asp-action="CreateNewShipReliably">
+    ...
+    <button type="submit" ...>Create new ship</button>
+    ...
+</form>
+...
+```
+
+Blog todos:
+- add docker support, deploy alpine linux image of the project to docker hub (continuous deployment - deploy it with sql server in docker on linux)
+- add appveyor CI
+- run the app inside docker linux, docker pull to do an application update   
+ 
