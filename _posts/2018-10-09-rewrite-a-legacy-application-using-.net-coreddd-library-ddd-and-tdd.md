@@ -14,6 +14,7 @@ Posted By [Martin Havlišta](https://xhafan.com/blog/about.html)
 - [Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application](#rewrite_as_new_app)
 - [Performance boost](#performance_boost)
 - [Reliable command handling](#reliable_command_handling)
+- [Conclusion](#conclusion)
 
 ### <a name="options_for_rewrite"></a>Options for rewrite
 
@@ -1236,7 +1237,7 @@ The code samples above are available here:
 - [ManageShipsController.CreateNewShipReliably()](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/AspNetCoreMvcApp/Controllers/ManageShipsController.cs#L72)
 - [CreateNewShipCommandMessageHandler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/CommandMessageHandlers/CreateNewShipCommandMessageHandler.cs)
 
-### Conclusion
+### <a name="conclusion"></a>Conclusion
 Congratulations for making it this far. Hopefully this blog post will help somebody when rewriting a legacy application. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below.
 
 ----------
