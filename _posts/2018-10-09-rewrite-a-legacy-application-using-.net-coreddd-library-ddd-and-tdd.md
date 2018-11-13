@@ -1230,9 +1230,6 @@ To plug the new reliable command handling into the AspNetCoreMvcApp, just submit
 </form>
 ...
 ```
-
-Blog todos:
-- add docker support, deploy alpine linux image of the project to docker hub (continuous deployment - deploy it with sql server in docker on linux)
-- add appveyor CI
-- run the app inside docker linux, docker pull to do an application update   
- 
+The code samples above are available here:
+- [ManageShipsController.CreateNewShipReliably()](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/AspNetCoreMvcApp/Controllers/ManageShipsController.cs#L72)
+- [CreateNewShipCommandMessageHandler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/CommandMessageHandlers/CreateNewShipCommandMessageHandler.cs)
