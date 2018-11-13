@@ -3,6 +3,8 @@ layout: post
 title: Rewrite a legacy application using .NET, CoreDdd library, DDD and TDD
 published: false
 ---
+Posted By [Martin Havlišta](https://xhafan.com/blog/about.html)
+
 ### About rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedure) with the new test driven implementation using commands, queries and domain entities.
 
 ### Table of Contents
@@ -1233,3 +1235,12 @@ To plug the new reliable command handling into the AspNetCoreMvcApp, just submit
 The code samples above are available here:
 - [ManageShipsController.CreateNewShipReliably()](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/AspNetCoreMvcApp/Controllers/ManageShipsController.cs#L72)
 - [CreateNewShipCommandMessageHandler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/CommandMessageHandlers/CreateNewShipCommandMessageHandler.cs)
+
+### Conclusion
+Congratulations for making it this far. Hopefully this blog post will help somebody when rewriting a legacy application. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below.
+
+----------
+
+### About Me
+
+[Martin Havlišta](https://xhafan.com/blog/about.html) is DDD TDD .NET/C# software developer, interested in modelling complex domains and implementing them using DDD and TDD.
