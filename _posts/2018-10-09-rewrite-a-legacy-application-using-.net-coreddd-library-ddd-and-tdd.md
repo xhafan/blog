@@ -1239,9 +1239,3 @@ The code samples above are available here:
 
 ### <a name="conclusion"></a>Conclusion
 Congratulations for making it this far. Hopefully this blog post will help somebody when rewriting a legacy application. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below.
-
-----------
-
-### About Me
-
-[Martin Havlišta](https://xhafan.com/blog/about.html) is DDD TDD .NET/C# software developer, interested in modelling complex domains and implementing them using DDD and TDD.
