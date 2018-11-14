@@ -6,7 +6,7 @@ highlighter:      rouge
 title:            xhafan's blog
 tagline:          ''
 description:      'Software development, DDD, TDD, .NET, C#'
-url:              https://xhafan.com/blog/
+url:              https://xhafan.com
 baseurl:          '/blog'
                   # the optional subpath of your site, e.g. "/blog"
                   # NB: This applies to all pages in your Jekyll site.
