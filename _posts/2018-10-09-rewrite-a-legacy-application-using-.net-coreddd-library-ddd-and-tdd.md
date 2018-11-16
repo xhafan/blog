@@ -21,7 +21,7 @@ Posted By [Martin Havlišta](https://xhafan.com/blog/about.html)
 When considering rewriting a fairly big legacy application, written in now outdated frameworks (e.g. ASP.NET Web Forms), using legacy ways of implementing a business logic (e.g. a business logic encoded in database stored procedures), which everybody is afraid to modify, there are couple of options for the application rewrite:
 
 1. Incrementally rewrite problematic parts, adding the new code into the same application code base. Once the new implementation is ready, switch it on, and disable the old implementation. This approach enables not touching the legacy code, only adding a new code, which would not be reusing the legacy code at all. For example, when rewriting ASP.NET Web Forms app, it is possible to [add ASP.NET MVC into ASP.NET Web Forms](https://stackoverflow.com/questions/2203411/combine-asp-net-mvc-with-webforms) application, but it would not be possible to rewrite the application in ASP.NET Core MVC.
-2. Incrementally rewrite problematic parts as a new application, where both applications use the same database instance. This approach allows rewriting the application in a modern framework (e.g. ASP.NET Core MVC), and running both projects in production side by side. Once the new implementation is ready, deploy it in the new application, and disable it from the legacy application. 
+2. Incrementally rewrite problematic parts as a new application, where both applications use the same database instance. This approach allows rewriting the application in a modern framework (e.g. ASP.NET Core MVC), and running both projects in production side by side. Once the new implementation of a standalone application part is ready, deploy it in the new application, and disable it from the legacy application. This way you can incrementally rewrite the legacy applications parts, and continuously deploy it into the new application. 
 3. Complete application rewrite, with a new database structure, with a big bang deployment and a database migration script, with no easy way to go back when things go wrong. It takes longest time to develop, as you have to rewrite most of the features before the new application can replace the legacy one.
 
 I personally prefer the option 2 for the following reasons:
@@ -974,7 +974,7 @@ The source code of the new ASP.NET Core MVC create ship implementation using DDD
 ### <a name="performance_boost"></a>Performance boost
 If your application is doing too much when handling a request, and some of the processing can be deferred to later time, you can utilize [domain events](https://github.com/xhafan/coreddd/wiki/Domain-events) and [publish event messages over a message bus from domain event handlers](https://github.com/xhafan/coreddd/wiki/Domain-events#publishing-event-messages-over-a-message-bus-from-domain-event-handlers), and handle the event messages in a separate process and transaction. Deferring some processing to a later time can make the main request transaction smaller, thus making the request handling shorter. Here are some examples of a processing which can be deferred:
 
-- subsequent domain processing (e.g. when creating an order in an eshop, the billing PDF generation can be done later)  
+- subsequent domain processing (e.g. when creating an order in an e-shop, the billing PDF generation can be done later)  
 - sending email
 - accessing other web services
  
