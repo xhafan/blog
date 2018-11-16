@@ -181,15 +181,15 @@ The first rewrite attempt will rewrite the ship creation code above using DDD an
 Let's implement the domain entities and command/command handler. Add a new .NET Standard class library into _LegacyToCoreDdd_ solution. We will manually multi-target .NET 4 and .NET Standard 2.0, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
 ```xml
 <TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
-```  
-Add CoreDdd into the legacy ASP.NET Web Forms application by following this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET). Once done, move the NHiberate configurator class into the newly created class library.
+```
+Add CoreDdd into the legacy ASP.NET Web Forms project by following this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET). Add [CoreDdd](https://www.nuget.org/packages/CoreDdd) and [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/) nuget packages into the new class library project, and move the NHiberate configurator class from the Web Forms project into the new class library project.
 
-As we are doing TDD, let's add `Ship` aggregate root domain entity into the newly created library, with some data properties, without any code in the constructor or methods:
+As we are doing TDD, let's add `Ship` aggregate root domain entity into the newly created class library project, with some data properties, without any code in the constructor or methods:
 
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    public Ship(string name, decimal tonnage)
+    public Ship(string name, decimal tonnage, string imoNumber)
     {
     }
 
@@ -198,7 +198,7 @@ public class Ship : Entity, IAggregateRoot
     public string ImoNumber { get; private set; }
 }
 ```
-A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
+A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework; for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
 ```c#
 [TestFixture]
 public class when_creating_new_ship
