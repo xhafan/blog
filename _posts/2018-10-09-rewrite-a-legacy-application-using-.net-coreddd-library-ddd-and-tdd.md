@@ -3,7 +3,7 @@ layout: post
 title: Rewrite a legacy application using .NET, CoreDdd library, DDD and TDD
 published: false
 ---
-Posted By [Martin Havlišta](https://xhafan.com/blog/about.html), 9 Oct 2018
+Posted By [Martin Havlišta](https://xhafan.com/blog/about.html)
 
 ### About rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedure) with the new test driven implementation using commands, queries and domain entities.
 
@@ -95,7 +95,7 @@ public static class SqlCommandExecutor
     }
 }
 ```
-A user fills in ship datails (ship name, tonnage, IMO number etc.), clicks *create new ship* button in the UI and the code-behind C# code will use ADO.NET to execute database stored procedure named `CreateShip`. The stored procedure `CreateShip` might look like this (SQL Server):
+A user fills in ship details (ship name, tonnage, IMO number etc.), clicks *create new ship* button in the UI and the code-behind C# code will use ADO.NET to execute database stored procedure named `CreateShip`. The stored procedure `CreateShip` might look like this (SQL Server):
 
 ```sql
 CREATE PROCEDURE CreateShip
@@ -160,7 +160,7 @@ create table ShipHistory
     CONSTRAINT PK_ShipHistory_ShipHistoryId PRIMARY KEY CLUSTERED (ShipHistoryId ASC)
 )
 ```
-The sql code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns created ship id into the application.
+The SQL code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns created ship id into the application.
 
 The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp), SQL scripts [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/DatabaseScripts). To open the solution, you will need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher. The solution uses a SQL Server LocalDB database. Here's how to [install SQL Server LocalDB](https://stackoverflow.com/questions/42774739/how-to-install-localdb-2016-along-with-visual-studio-2017). You need to manually create two databases `Legacy` and `LegacyTest`, the application will automatically build the database using SQL scripts using [DatabaseBuilder](https://github.com/xhafan/databasebuilder/wiki). 
 
@@ -651,7 +651,7 @@ public partial class CreateShip : Page
 ```
 For an explanation why the code uses Service Locator pattern (`IoC.Resolve<>()`), please have look at this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET).
 
-As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the new create ship implementation using DDD and CQRQ is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsCoreDdd). You can find there other two Web Form pages to update a ship, and to list existing ships (listing existing ships is implemented using [queries](https://github.com/xhafan/coreddd/wiki/Queries)). You can compare the new implementation to the [legacy one](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsAdoNet).
+As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the new create ship implementation using DDD and CQRS is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsCoreDdd). You can find there other two Web Form pages to update a ship, and to list existing ships (listing existing ships is implemented using [queries](https://github.com/xhafan/coreddd/wiki/Queries)). You can compare the new implementation to the [legacy one](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsAdoNet).
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
