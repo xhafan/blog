@@ -38,7 +38,7 @@ If you decide to rewrite your legacy application using [DDD](https://stackoverfl
 ### <a name="example_legacy_app"></a>Example legacy application
 
 The example legacy application we are about to rewrite is a ship management application. This application can create new ships, update existing ships, and list existing ships. It's an ASP.NET Web Forms, .NET 4 application, with code-behind page model, using database stored procedures to implement the server side business logic. The ASPX code to create a new ship might look like this:
-```aspx
+```xml
 <form id="form1" runat="server">
     <div>
         Ship name:
