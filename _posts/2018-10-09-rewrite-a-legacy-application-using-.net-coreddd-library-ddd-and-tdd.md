@@ -251,12 +251,12 @@ public class ShipHistory : Entity
 ```
 You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a collection of `ShipHistory` records into `Ship`:
 ```c#
-    public class Ship : Entity, IAggregateRoot
-    {
-        private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
-        ...
-        public IEnumerable<ShipHistory> ShipHistories => _shipHistories;
-    }
+public class Ship : Entity, IAggregateRoot
+{
+    private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
+    ...
+    public IEnumerable<ShipHistory> ShipHistories => _shipHistories;
+}
 ```
 The private field is a collection where new `ShipHistory` records can be added, and the public property exposes the ship history collection as unmodifiable enumerable. Now we can add a new test into `when_creating_new_ship`:
 ```c#
