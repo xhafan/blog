@@ -274,7 +274,7 @@ This test would fail. Now the behaviour can be implemented:
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
+    private readonly ISet<ShipHistory> _shipHistories = new HashSet<ShipHistory>();
 
     public Ship(string name, decimal tonnage, string imoNumber)
     {
