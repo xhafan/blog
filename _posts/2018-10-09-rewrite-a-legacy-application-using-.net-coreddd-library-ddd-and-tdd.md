@@ -1239,4 +1239,4 @@ The code samples above are available here:
 - [CreateNewShipCommandMessageHandler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/CommandMessageHandlers/CreateNewShipCommandMessageHandler.cs)
 
 ### <a name="conclusion"></a>Conclusion
-Congratulations for making it this far. Hopefully this blog post will help somebody when rewriting a legacy application. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below.
+Congratulations for making it to the end of this long blog post. Hopefully this blog post will help somebody to  rewrite a legacy application using DDD. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below. Thank you for reading!
