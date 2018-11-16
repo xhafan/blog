@@ -1223,7 +1223,7 @@ public class CreateNewShipCommandMessageHandler : IHandleMessages<CreateNewShipC
     }
 }
 ```
-The test for the command message handler is available [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp.IntegrationTests/MessageHandlers/CreateNewShipCommandMessageHandlers/when_handling_create_new_ship_command_message.cs). The command message handler implementation is reusing the existing `CreateNewShipCommandHandler` via the command executor, but it would be possible to implement the command handling logic directly here in the command message handler, and to get rid of `CreateNewShipCommandHandler`.
+The test for the command message handler is available [here](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp.IntegrationTests/CommandMessageHandlers/CreateNewShipCommandMessageHandlers/when_handling_create_new_ship_command_message.cs). The command message handler implementation is reusing the existing `CreateNewShipCommandHandler` via the command executor, but it would be possible to implement the command handling logic directly here in the command message handler, and to get rid of `CreateNewShipCommandHandler`.
 To plug the new reliable command handling into the AspNetCoreMvcApp, just submit the create a new ship HTML form into the new action method `CreateNewShipReliably` (in [CreateNewShip.cshtml](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/AspNetCoreMvcApp/Views/ManageShips/CreateNewShip.cshtml)):
 ```xml
 ...
