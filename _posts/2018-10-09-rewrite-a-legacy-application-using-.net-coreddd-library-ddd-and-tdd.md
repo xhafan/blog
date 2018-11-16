@@ -178,7 +178,7 @@ The first rewrite attempt will rewrite the ship creation code above using DDD an
 - create `CreateNewShipCommand` and `CreateNewShipCommandHandler` to new up the `Ship` entity and persist it into a database ([about commands](https://github.com/xhafan/coreddd/wiki/Commands))
 - add a new Web Forms page for the new ship creation code. The old Web Forms page will be intact, and it will be possible to compare the old and the new implementation.
  
-Let's implement the domain entities and command/command handler. Add a new .NET Standard class library. We will manually multi-target .NET 4 and .NET Standard 2.0, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
+Let's implement the domain entities and command/command handler. Add a new .NET Standard class library into _LegacyToCoreDdd_ solution. We will manually multi-target .NET 4 and .NET Standard 2.0, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
 ```xml
 <TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
 ```  
