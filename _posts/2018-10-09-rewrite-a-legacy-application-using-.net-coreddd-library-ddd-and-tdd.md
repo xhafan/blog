@@ -3,7 +3,7 @@ layout: post
 title: Rewrite a legacy application using .NET, CoreDdd library, DDD and TDD
 published: false
 ---
-Posted By [Martin Havlišta](https://xhafan.com/blog/about.html)
+Posted By [Martin Havlišta]({{ site.baseurl }}/about.html)
 
 ### About rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedure) with the new test driven implementation using commands, queries and domain entities.
 
