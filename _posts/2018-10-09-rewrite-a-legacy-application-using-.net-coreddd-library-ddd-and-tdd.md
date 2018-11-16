@@ -249,16 +249,16 @@ public class ShipHistory : Entity
     public DateTime CreatedOn { get; private set; }
 }
 ```
-You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a collection of `ShipHistory` records into `Ship`:
+You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a hash set collection of `ShipHistory` records into `Ship` (hash set is needed to ensure a collection of unique entities without duplicates, more info about this [here](https://stackoverflow.com/a/1921727/379279)):
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
+    private readonly ISet<ShipHistory> _shipHistories = new HashSet<ShipHistory>();
     ...
     public IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
 ```
-The private field is a collection where new `ShipHistory` records can be added, and the public property exposes the ship history collection as unmodifiable enumerable. Now we can add a new test into `when_creating_new_ship`:
+The private field is a hash set collection where new `ShipHistory` records can be added, and the public property exposes the ship history collection as unmodifiable enumerable. Now we can add a new test into `when_creating_new_ship`:
 ```c#
 [Test]
 public void ship_history_record_is_created_and_its_data_are_populated()
