@@ -392,7 +392,7 @@ create table ShipHistory
     ...
 )
 ```
-This means that the application needs to override the default CoreDdd convention by adding a customized mapping file for an entity. Add the following [FluentNHibernate](https://github.com/FluentNHibernate/fluent-nhibernate/wiki) mapping classes into the legacy application:
+This means that the application needs to override the default CoreDdd convention by adding a customized mapping file for an entity. Add the following [FluentNHibernate](https://github.com/FluentNHibernate/fluent-nhibernate/wiki) mapping classes:
 ```c#
 public class ShipMappingOverrides : IAutoMappingOverride<Ship>
 {
