@@ -389,7 +389,7 @@ public class Ship : Entity, IAggregateRoot
     }
 
     public virtual string Name { get; protected set; } // all public/protected properties and methods marked as virtual
-    public virtual decimal Tonnage { get; protected set; } // all setters are protected
+    public virtual decimal Tonnage { get; protected set; } // all setters are marked as protected
     public virtual string ImoNumber { get; protected set; }
     public virtual IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
