@@ -163,7 +163,7 @@ create table ShipHistory
 ```
 The SQL code creates a new `Ship` table record, and a new `ShipHistory` table record, and returns created ship id into the application.
 
-The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd-clean). If you would like to follow the coding steps in this blog post, clone or download the repository, and open the _src/LegacyToCoreDdd.sln_ solution in Visual Studio. You would need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher. The solution uses a SQL Server LocalDB database. Here's how to [install SQL Server LocalDB](https://stackoverflow.com/questions/42774739/how-to-install-localdb-2016-along-with-visual-studio-2017) as a part of Visual Studio 2017 installation. You need to manually create two databases `Legacy` and `LegacyTest`, the application will automatically build the database using SQL scripts using [DatabaseBuilder](https://github.com/xhafan/databasebuilder/wiki). 
+The source code of this application is [here](https://github.com/xhafan/legacy-to-coreddd-clean). If you would like to follow the coding steps in this blog post, clone or download the repository, and open the _src/LegacyToCoreDdd.sln_ solution in Visual Studio. You would need [Visual Studio 2017](https://visualstudio.microsoft.com/downloads/) or higher and [.NET Core 2.1](https://www.microsoft.com/net/download) or higher. The solution uses a SQL Server LocalDB database. Here's how to [install SQL Server LocalDB](https://stackoverflow.com/questions/42774739/how-to-install-localdb-2016-along-with-visual-studio-2017) as a part of Visual Studio 2017 installation. You would need to manually create a new database called `Legacy`, and the application will automatically build the database using SQL scripts using [DatabaseBuilder](https://github.com/xhafan/databasebuilder/wiki). 
 
 One of the problems with Web Forms code-behind and business logic inside SQL stored procedures is that the code - both page code-behind C# and SQL - are difficult to modify because it's difficult to [unit or integration test](https://stackoverflow.com/questions/5357601/whats-the-difference-between-unit-tests-and-integration-tests) code-behind and SQL. To be able to modify a code in the long run, one has to develop the code using [TDD](https://en.wikipedia.org/wiki/Test-driven_development), and with the test coverage, it's possible to modify the code in a confident way that the previous functionality won't be broken.
 
@@ -178,13 +178,11 @@ The first rewrite attempt will rewrite the ship creation code above using DDD an
 - create `CreateNewShipCommand` and `CreateNewShipCommandHandler` to new up the `Ship` entity and persist it into a database ([about commands](https://github.com/xhafan/coreddd/wiki/Commands))
 - add a new Web Forms page for the new ship creation code. The old Web Forms page will be intact, and it will be possible to compare the old and the new implementation.
  
-Let's implement the domain entities and command/command handler. Add a new .NET Standard class library into _LegacyToCoreDdd_ solution. We will manually multi-target .NET 4 and .NET Standard 2.0, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
+Let's implement the domain entities and command/command handler. Add a new .NET Standard class library called _CoreDddShared_ into _LegacyToCoreDdd_ solution. We will manually multi-target .NET Standard 2.0 and .NET 4, so we can reuse the implementation within the existing legacy .NET 4 Web Forms application, and later in the ASP.NET Core MVC application. Manually edit the csproj file, and change the `TargetFramework` line to (please note the **s** in `TargetFrameworks`): 
 ```xml
 <TargetFrameworks>netstandard2.0;net40</TargetFrameworks>
 ```
-Add CoreDdd into the legacy ASP.NET Web Forms project by following this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET). Add [CoreDdd](https://www.nuget.org/packages/CoreDdd) and [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/) nuget packages into the new class library project, and move the NHiberate configurator class from the Web Forms project into the new class library project.
-
-As we are doing TDD, let's add `Ship` aggregate root domain entity into the newly created class library project, with some data properties, without any code in the constructor or methods:
+Add [CoreDdd](https://www.nuget.org/packages/CoreDdd) nuget package into the new class library project. As we are doing TDD, let's add `Ship` aggregate root domain entity into the class library project, with some data properties, without any code in the constructor or methods:
 
 ```c#
 public class Ship : Entity, IAggregateRoot
@@ -198,7 +196,7 @@ public class Ship : Entity, IAggregateRoot
     public string ImoNumber { get; private set; }
 }
 ```
-A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library test project for unit tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework; for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
+A code in the constructor or any method (*behaviour* code) will be added only after we have a failing *behaviour* test, and the added *behaviour* code will make the test pass. Let's add a new .NET Core class library called _CoreDddShared.Tests_ test project for unit tests, manually multi-target .NET Core 2.1 and .NET 4 in csproj file (`<TargetFrameworks>netcoreapp2.1;net40</TargetFrameworks>`) and add your favourite unit-testing framework to it (mine is [NUnit](https://www.nuget.org/packages/nunit/) and [Shouldly](https://www.nuget.org/packages/Shouldly/) as an assertion framework; for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)). Let's add a test which would test what should happen when creating a new ship, run it (you can use NUnit test runner, or [Resharper](https://www.jetbrains.com/resharper) Visual Studio extension) and see it fail:
 ```c#
 [TestFixture]
 public class when_creating_new_ship
@@ -295,7 +293,35 @@ public class ShipHistory : Entity
     ...
 }
 ``` 
-The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new .NET Core class library project for integration tests, manually multi-target .NET 4 and .NET Core 2.1 in csproj file (`<TargetFrameworks>net40;netcoreapp2.1</TargetFrameworks>`) and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests. Use the NHibernate configurator created in the steps above and use the SQL scripts above to create a test database. The persistence test for `Ship` class will look like this:
+The test passes. So far we unit-tested the domain entities behaviour. Let's add an integration tests for the entity mapping into database tables. Create a new .NET Core class library project called _CoreDddShared.IntegrationTests_ for integration tests, manually multi-target .NET Core 2.1 and .NET 4 in csproj file (`<TargetFrameworks>netcoreapp2.1;net40</TargetFrameworks>`) and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests into _CoreDddShared.IntegrationTests_. Add [System.Data.SqlClient](https://www.nuget.org/packages/System.Data.SqlClient/) nuget package into _CoreDddShared.IntegrationTests_ project. The `hibernate.cfg.xml` file added to _CoreDddShared.IntegrationTests_ will look like this (SQL Server version for LocalDB database):
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<hibernate-configuration xmlns="urn:nhibernate-configuration-2.2">
+  <session-factory>
+
+    <property name="connection.connection_string">Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=LegacyTest;Integrated Security=SSPI;</property>
+    <property name="dialect">NHibernate.Dialect.MsSql2008Dialect</property>
+    <property name="connection.driver_class">NHibernate.Driver.SqlClientDriver</property>
+
+    <property name="connection.provider">NHibernate.Connection.DriverConnectionProvider</property>
+    <property name="show_sql">true</property>
+    <property name="proxyfactory.factory_class">NHibernate.Bytecode.DefaultProxyFactoryFactory, NHibernate</property>
+
+  </session-factory>
+</hibernate-configuration>
+```
+Add [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/) nuget package into _CoreDddShared_ project, and add a new class `CoreDddSharedNhibernateConfigurator` into _CoreDddShared_ project:
+```c#
+public class CoreDddSharedNhibernateConfigurator : NhibernateConfigurator
+{
+    protected override Assembly[] GetAssembliesToMap()
+    {
+        return new[] { typeof(Ship).Assembly }; // this tells NHibernate to map Ship entity and other entities in the same assembly into a database
+    }
+}
+```  
+Create a new database called `LegacyTest`, and use the SQL scripts above to create `Ship` and `ShipHistory` tables.
+The persistence test for `Ship` class will look like this:
 ```c#
 [TestFixture]
 public class when_persisting_ship
@@ -345,17 +371,7 @@ public class when_persisting_ship
     }
 }
 ``` 
-When you run the persistence test, NHibernate would complain that it does not know about `Ship` entity (*NHibernate.MappingException : No persister for: Ship*). Modify the NHibernate configurator to map `Ship` entity:
-```c#
-public class CoreDddSharedNhibernateConfigurator : NhibernateConfigurator
-{
-    protected override Assembly[] GetAssembliesToMap()
-    {
-        return new[] { typeof(Ship).Assembly };
-    }
-}
-```
-When you run the test now, NHibernate would complain with these errors:
+When you run the persistence test, NHibernate would complain about these errors:
 - *Ship: type should have a visible (public or protected) no-argument constructor*
 - *Ship: method get_Name should be 'public/protected virtual' or 'protected internal virtual'*
 - *Ship: method set_Name should be 'public/protected virtual' or 'protected internal virtual'*
