@@ -1000,7 +1000,7 @@ If your application is doing too much when handling a request, and some of the p
 - sending email
 - accessing other web services
  
-Let's imagine that when a ship is created we need to verify it's IMO (International Maritime Organization) number using a web service. We won't be accessing a real web service, we will just create a new service `InternationalMaritimeOrganizationVerifier`. Here is a version for .NET 4 Web Forms app:
+Let's imagine that when a ship is created we need to verify it's IMO (International Maritime Organization) number using a web service. We won't be accessing a real web service, we will just create a new fake service `IInternationalMaritimeOrganizationVerifier`. Here is a version for .NET 4 Web Forms app:
 ```c#
 public class InternationalMaritimeOrganizationVerifier : IInternationalMaritimeOrganizationVerifier
 {
