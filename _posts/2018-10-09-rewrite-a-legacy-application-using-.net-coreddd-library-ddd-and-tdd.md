@@ -639,7 +639,7 @@ public static class ObjectExtensions
 ```
 This London style TDD unit test for `CreateNewShipCommandHandler` does not add much value. Yes, it is faster to execute (as it's not dealing with a database), but there is no point in [stubbing or mocking](https://stackoverflow.com/questions/346372/whats-the-difference-between-faking-mocking-and-stubbing) things when one can just use real objects and test their cooperation. I would even say that unit-testing adds a value only when you don't have to stub or mock cooperating objects. It's OK to stub/mock external facing services as you don't want to end up with HTTP requests to a web services in your unit tests. But it's not OK to stub `Ship` entity when testing `ShipHistory` entity as these two are closely cooperating objects. When you have to stub or mock a lot for the sake of having a unit test, I would suggest try Chicago style TDD unit test with real objects, or, if database is needed, try an integration test, and see for yourself which test adds more value for you.
 
-The next thing is to call the command handler from the Web Forms page code-behind:
+The next thing is to call the command handler from the Web Forms page code-behind. Before this can be done, add CoreDdd into the legacy ASP.NET Web Forms project by following this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET). Now, modify the `CreateShip` page:
 ```c#
 public partial class CreateShip : Page
 {
@@ -673,8 +673,6 @@ public partial class CreateShip : Page
     }
 }
 ```
-For an explanation why the code uses Service Locator pattern (`IoC.Resolve<>()`), please have look at this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET).
-
 As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will ignore testing it. The source code of the new create ship implementation using DDD and CQRS is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsCoreDdd). You can find there other two Web Form pages to update a ship, and to list existing ships (listing existing ships is implemented using [queries](https://github.com/xhafan/coreddd/wiki/Queries)). You can compare the new implementation to the [legacy one](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/LegacyWebFormsApp/WebFormsAdoNet).
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
