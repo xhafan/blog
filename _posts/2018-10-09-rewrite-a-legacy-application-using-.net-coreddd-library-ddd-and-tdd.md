@@ -483,7 +483,14 @@ public class when_persisting_ship_history
     }
 }
 ```
-These tests should pass straight away. The domain code covered by unit tests and integration tests is complete. Now we need to add a command `CreateNewShipCommand` implementing `ICommand` marker interface:
+These tests should pass straight away for .NET Core 2.1. For .NET 4, it would complain about missing NHibernate dll of certain version. This can be fixed by adding:
+```xml
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+```
+into `PropertyGroup` tag in _CoreDddShared.IntegrationTests.csproj_.
+ 
+The domain code covered by unit tests and integration tests is complete. Now we need to add a command `CreateNewShipCommand` implementing `ICommand` marker interface:
 ```c#
 public class CreateNewShipCommand : ICommand
 {
