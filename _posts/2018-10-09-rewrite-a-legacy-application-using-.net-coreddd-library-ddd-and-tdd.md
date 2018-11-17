@@ -249,11 +249,11 @@ public class ShipHistory : Entity
     public DateTime CreatedOn { get; private set; }
 }
 ```
-You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a hash set collection of `ShipHistory` records into `Ship` (hash set is needed to ensure a collection of unique entities without duplicates, more info about this [here](https://stackoverflow.com/a/1921727/379279)):
+You can note here that `ShipHistory` is not marked as an aggregate root domain entity (it does not implement `IAggregateRoot` interface). `ShipHistory` entity belongs to a `Ship` entity, and `ShipHistory` existence does not make sense without `Ship` - that's why it's not an aggregate root. Let's add a collection of `ShipHistory` records into `Ship`:
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    private readonly ISet<ShipHistory> _shipHistories = new HashSet<ShipHistory>();
+    private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
     ...
     public IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
@@ -274,7 +274,7 @@ This test would fail. Now the behaviour can be implemented:
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
-    private readonly ISet<ShipHistory> _shipHistories = new HashSet<ShipHistory>();
+    private readonly ICollection<ShipHistory> _shipHistories = new List<ShipHistory>();
 
     public Ship(string name, decimal tonnage, string imoNumber)
     {
