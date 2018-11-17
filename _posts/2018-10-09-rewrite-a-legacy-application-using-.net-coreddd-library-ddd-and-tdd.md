@@ -978,7 +978,7 @@ public class when_creating_new_ship
         ((int)redirectToActionResult.RouteValues["lastCreatedShipId"]).ShouldBe(CreatedShipId);
     }
 
-    // This method is simulating "what would happen in real command executor"
+    // This method is simulating "what would happen in the real command executor"
     private void _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithCreatedShipIdAsEventArgs()
     {
         A.CallTo(() => _commandExecutor.ExecuteAsync(_createNewShipCommand)).Invokes(() =>
