@@ -517,15 +517,15 @@ Command handler has a ship repository passed into a constructor as it will be ne
 [TestFixture]
 public class when_creating_new_ship
 {
-    private PersistenceTestHelper _p;
+    private NhibernateUnitOfWork _unitOfWork;
     private Ship _persistedShip;
     private int _createdShipId;
 
     [SetUp]
     public void Context()
     {
-        _p = new PersistenceTestHelper(new MyNhibernateConfigurator());
-        _p.BeginTransaction();
+        _unitOfWork = new NhibernateUnitOfWork(new CoreDddSharedNhibernateConfigurator());
+        _unitOfWork.BeginTransaction();
 
         var createNewShipCommand = new CreateNewShipCommand
         {
@@ -533,13 +533,14 @@ public class when_creating_new_ship
             Tonnage = 23.45678m,
             ImoNumber = "IMO 765432"
         };
-        var createNewShipCommandHandler = new CreateNewShipCommandHandler(new NhibernateRepository<Ship>(_p.UnitOfWork));
+        var createNewShipCommandHandler = new CreateNewShipCommandHandler(new NhibernateRepository<Ship>(_unitOfWork));
         createNewShipCommandHandler.CommandExecuted += args => _createdShipId = (int) args.Args;
         createNewShipCommandHandler.Execute(createNewShipCommand);
 
-        _p.Clear();
+        _unitOfWork.Flush();
+        _unitOfWork.Clear();
 
-        _persistedShip = _p.Get<Ship>(_createdShipId);
+        _persistedShip = _unitOfWork.Get<Ship>(_createdShipId);
     }
 
     [Test]
@@ -554,7 +555,7 @@ public class when_creating_new_ship
     [TearDown]
     public void TearDown()
     {
-        _p.Rollback();
+        _unitOfWork.Rollback();
     }
 }
 ```
