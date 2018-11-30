@@ -833,7 +833,7 @@ Let's add the integration test first:
 [TestFixture]
 public class when_viewing_create_new_ship
 {
-    private PersistenceTestHelper _p;
+    private NhibernateUnitOfWork _unitOfWork;
     private ServiceProvider _serviceProvider;
     private IServiceScope _serviceScope;
 
@@ -845,8 +845,8 @@ public class when_viewing_create_new_ship
         _serviceProvider = new ServiceProviderHelper().BuildServiceProvider();
         _serviceScope = _serviceProvider.CreateScope();
 
-        _p = new PersistenceTestHelper(_serviceProvider.GetService<NhibernateUnitOfWork>());
-        _p.BeginTransaction();
+        _unitOfWork = _serviceProvider.GetService<NhibernateUnitOfWork>();
+        _unitOfWork.BeginTransaction();
 
         var manageShipsController = new ManageShipsControllerBuilder(_serviceProvider).Build();
 
@@ -862,7 +862,7 @@ public class when_viewing_create_new_ship
     [TearDown]
     public void TearDown()
     {
-        _p.Rollback();
+        _unitOfWork.Rollback();
         _serviceScope.Dispose();
         _serviceProvider.Dispose();
     }
