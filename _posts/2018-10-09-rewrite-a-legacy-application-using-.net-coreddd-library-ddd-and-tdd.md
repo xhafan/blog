@@ -326,22 +326,22 @@ The persistence test for `Ship` class will look like this:
 [TestFixture]
 public class when_persisting_ship
 {
-    private PersistenceTestHelper _p;
+    private NhibernateUnitOfWork _unitOfWork;
     private Ship _newShip;
     private Ship _persistedShip;
 
     [SetUp]
     public void Context()
     {
-        _p = new PersistenceTestHelper(new CoreDddSharedNhibernateConfigurator()); 
-        _p.BeginTransaction();
+        _unitOfWork = new NhibernateUnitOfWork(new CoreDddSharedNhibernateConfigurator());
+        _unitOfWork.BeginTransaction();
 
         _newShip = new Ship("ship name", tonnage: 23.4m, imoNumber: "IMO 12345");
 
-        _p.Save(_newShip);
-        _p.Clear();
+        _unitOfWork.Save(_newShip); // save entity into DB -> send INSERT SQL statement into DB
+        _unitOfWork.Clear(); // clear NHibernate session so the following SQL SELECT would not load cached entity version from the session, but would query the database
 
-        _persistedShip = _p.Get<Ship>(_newShip.Id);
+        _persistedShip = _unitOfWork.Get<Ship>(_newShip.Id);
     }
 
     [Test]
@@ -367,7 +367,7 @@ public class when_persisting_ship
     [TearDown]
     public void TearDown()
     {
-        _p.Rollback();
+        _unitOfWork.Rollback();
     }
 }
 ``` 
