@@ -312,7 +312,7 @@ The test passes. So far we unit-tested the domain entities behaviour. Let's add 
 ```
 Add [CoreDdd.Nhibernate](https://www.nuget.org/packages/CoreDdd.Nhibernate/) nuget package into _CoreDddShared_ project, and add a new class `CoreDddSharedNhibernateConfigurator` into _CoreDddShared_ project:
 ```c#
-public class CoreDddSharedNhibernateConfigurator : NhibernateConfigurator
+public class CoreDddSharedNhibernateConfigurator : BaseNhibernateConfigurator
 {
     protected override Assembly[] GetAssembliesToMap()
     {
@@ -435,7 +435,7 @@ Now the `Ship` persistence passes. Let's add a new persistence test for `ShipHis
 [TestFixture]
 public class when_persisting_ship_history
 {
-    private PersistenceTestHelper _p;
+    private NhibernateUnitOfWork _unitOfWork;
     private Ship _newShip;
     private Ship _persistedShip;
     private ShipHistory _persistedShipHistory;
@@ -443,16 +443,16 @@ public class when_persisting_ship_history
     [SetUp]
     public void Context()
     {
-        _p = new PersistenceTestHelper(new MyNhibernateConfigurator());
-        _p.BeginTransaction();
+        _unitOfWork = new NhibernateUnitOfWork(new CoreDddSharedNhibernateConfigurator());
+        _unitOfWork.BeginTransaction();
 
         _newShip = new Ship("ship name", tonnage: 23.4m, imoNumber: "IMO 12345");
 
-        _p.Save(_newShip);
+        _unitOfWork.Save(_newShip);
 
-        _p.Clear();
+        _unitOfWork.Clear();
 
-        _persistedShip = _p.Get<Ship>(_newShip.Id);
+        _persistedShip = _unitOfWork.Get<Ship>(_newShip.Id);
         _persistedShipHistory = _persistedShip.ShipHistories.SingleOrDefault();
     }
 
@@ -479,7 +479,7 @@ public class when_persisting_ship_history
     [TearDown]
     public void TearDown()
     {
-        _p.Rollback();
+        _unitOfWork.Rollback();
     }
 }
 ```
