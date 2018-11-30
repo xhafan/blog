@@ -700,7 +700,7 @@ We will add a Chicago style TDD integration test for the controller `CreateNewSh
 [TestFixture]
 public class when_creating_new_ship
 {
-    private PersistenceTestHelper _p;
+    private NhibernateUnitOfWork _unitOfWork;
     private ServiceProvider _serviceProvider;
     private IServiceScope _serviceScope;
 
@@ -713,8 +713,8 @@ public class when_creating_new_ship
         _serviceProvider = new ServiceProviderHelper().BuildServiceProvider();
         _serviceScope = _serviceProvider.CreateScope();
 
-        _p = new PersistenceTestHelper(_serviceProvider.GetService<NhibernateUnitOfWork>());
-        _p.BeginTransaction();
+        _unitOfWork = _serviceProvider.GetService<NhibernateUnitOfWork>();
+        _unitOfWork.BeginTransaction();
 
         _shipCountBefore = _GetShipCount();
 
@@ -723,13 +723,13 @@ public class when_creating_new_ship
         var createNewShipCommand = new CreateNewShipCommand
         {
             ShipName = "ship name",
-            Tonnage = 23.4m,
+            Tonnage =  23.4m,
             ImoNumber = "IMO 12345"
         };
         _actionResult = await manageShipsController.CreateNewShip(createNewShipCommand);
 
-        _p.Flush();
-        _p.Clear();
+        _unitOfWork.Flush();
+        _unitOfWork.Clear();
     }
 
     [Test]
@@ -742,7 +742,7 @@ public class when_creating_new_ship
     public void action_result_is_redirect_to_action_result()
     {
         _actionResult.ShouldBeOfType<RedirectToActionResult>();
-        var redirectToActionResult = (RedirectToActionResult)_actionResult;
+        var redirectToActionResult = (RedirectToActionResult) _actionResult;
         redirectToActionResult.ControllerName.ShouldBeNull();
         redirectToActionResult.ActionName.ShouldBe("CreateNewShip");
     }
@@ -750,14 +750,14 @@ public class when_creating_new_ship
     [TearDown]
     public void TearDown()
     {
-        _p.Rollback();
+        _unitOfWork.Rollback();
         _serviceScope.Dispose();
         _serviceProvider.Dispose();
     }
 
     private int _GetShipCount()
     {
-        return _p.UnitOfWork.Session.QueryOver<Ship>().RowCount();
+        return _unitOfWork.Session.QueryOver<Ship>().RowCount();
     }
 }
 
