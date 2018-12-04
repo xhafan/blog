@@ -37,7 +37,7 @@ Sometimes option 1 is fine as well, as long as the framework used on the legacy 
 If you decide to rewrite your legacy application using domain-driven design because the business domain is quite complex with a rich behaviour, [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library can help with the DDD and CQRS infrastructure for your project. It supports .NET Core and full .NET framework 4 and higher. To learn more about CoreDdd, please refer to the CoreDdd  [documentation](https://github.com/xhafan/coreddd/wiki) and [code samples](https://github.com/xhafan/coreddd-sample).
 
 ### <a name="why_use_domain_driven_design"></a>Why use domain-driven design
-Please see my [other blog post]({{ site.baseurl }}/2018-12-03-why-use-domain-driven-design) with my take on why use domain-driven design.
+Please see my [other blog post]({{ site.baseurl }}/2018/12/03/why-use-domain-driven-design) with my take on why use domain-driven design.
 
 ### <a name="example_legacy_app"></a>Example legacy application
 
