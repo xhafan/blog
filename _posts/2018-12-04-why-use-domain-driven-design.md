@@ -2,7 +2,6 @@
 layout: post
 title: Why use domain-driven design
 tags: DDD
-published: false
 ---
 Posted By [Martin Havlišta]({{ site.baseurl }}/about.html)
 
