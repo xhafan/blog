@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Readable maintainable code? Use DDD TDD CQRS IoC
+tags: DDD TDD CQRS IoC
 ---
 
 Back in 1994 when I was 14 my parents asked me if I want a video player or a computer. So I got a PC, 286, 12 MHz, EGA graphics with 16 bloody colours. Everybody was playing Doom except me. After completing all sorts of 16 coloured games distributed on faulty 3.5" diskettes, I became bored. A friend of mine installed Turbo Pascal on my machine, and I was started. Later I learned C/C++, Java, wrote couple of university projects in it, and at last C#/.NET - a language and a platform of my choice.

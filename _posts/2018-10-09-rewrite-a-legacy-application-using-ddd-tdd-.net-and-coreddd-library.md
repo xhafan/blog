@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Rewrite a legacy application using DDD, TDD, .NET and CoreDdd library 
+tags: CoreDdd DDD TDD CQRS
 published: false
 ---
 Posted By [Martin Havlišta]({{ site.baseurl }}/about.html)
