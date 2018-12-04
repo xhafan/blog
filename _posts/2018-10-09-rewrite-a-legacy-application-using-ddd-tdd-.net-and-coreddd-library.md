@@ -1,11 +1,11 @@
 ---
 layout: post
-title: Rewrite a legacy application using .NET, CoreDdd library, DDD and TDD
+title: Rewrite a legacy application using DDD, TDD, .NET and CoreDdd library 
 published: false
 ---
 Posted By [Martin Havlišta]({{ site.baseurl }}/about.html)
 
-### This blog post is for a software developer who wants to learn about rewriting a legacy application (e.g. ASP.NET Web Forms) using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [domain-driven design](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) (DDD), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style test-driven development](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) (TDD). We will compare the original legacy implementation (code-behind page model, stored procedures) with the new test driven implementation using commands, queries and domain entities.
+### This blog post is for a software developer who would like to learn about rewriting a legacy application (e.g. ASP.NET Web Forms) using [domain-driven design](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) (DDD), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style test-driven development](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) (TDD) and [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library. We will compare the original legacy implementation (code-behind page model, stored procedures) with the new test driven implementation using commands, queries and domain entities.
 <!--more-->
 
 ### Table of Contents
