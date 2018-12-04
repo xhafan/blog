@@ -5,11 +5,12 @@ published: false
 ---
 Posted By [Martin Havlišta]({{ site.baseurl }}/about.html)
 
-### About rewriting a legacy ASP.NET Web Forms application into ASP.NET Core MVC using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd). Comparing original legacy implementation (code-behind page model, stored procedures) with the new test driven implementation using commands, queries and domain entities.
+### This blog post is for a software developer who wants to learn about rewriting a legacy application (e.g. ASP.NET Web Forms) using [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library, [domain-driven design](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) (DDD), [CQRS](https://martinfowler.com/bliki/CQRS.html) and [Chicago style test-driven development](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) (TDD). We will compare the original legacy implementation (code-behind page model, stored procedures) with the new test driven implementation using commands, queries and domain entities.
 <!--more-->
 
 ### Table of Contents
 - [Options for rewrite](#options_for_rewrite)
+- [Why use domain-driven design](#why_use_domain_driven_design)
 - [Example legacy application](#example_legacy_app)
 - [Incrementally rewriting a legacy application problematic parts, adding the new code into the same application code base](#rewrite_in_existing_app)
 - [Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application](#rewrite_as_new_app)
@@ -33,7 +34,10 @@ I personally prefer the option 2 for the following reasons:
 
 Sometimes option 1 is fine as well, as long as the framework used on the legacy project is upgradeable to a more modern (preferably latest) version (e.g. .NET 2 -> .NET 4.x). Project rewrites using options 3 I've seen mostly failed, and were destined to be slowly abandoned or rewritten yet again.
 
-If you decide to rewrite your legacy application using [DDD](https://stackoverflow.com/questions/1222392/can-someone-explain-domain-driven-design-ddd-in-plain-english-please) because the business domain is quite complex, [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library can help with the DDD and CQRS infrastructure for your project. It supports .NET Core 2 and higher and .NET framework 4 and higher. To learn more about CoreDdd, please refer to the CoreDdd  [documentation](https://github.com/xhafan/coreddd/wiki) and [code samples](https://github.com/xhafan/coreddd-sample).
+If you decide to rewrite your legacy application using domain-driven design because the business domain is quite complex with a rich behaviour, [CoreDdd](https://github.com/xhafan/coreddd/wiki) .NET library can help with the DDD and CQRS infrastructure for your project. It supports .NET Core and full .NET framework 4 and higher. To learn more about CoreDdd, please refer to the CoreDdd  [documentation](https://github.com/xhafan/coreddd/wiki) and [code samples](https://github.com/xhafan/coreddd-sample).
+
+### <a name="why_use_domain_driven_design"></a>Why use domain-driven design
+Please see my [other blog post]({{ site.baseurl }}/2018-12-03-why-use-domain-driven-design) with my take on why use domain-driven design.
 
 ### <a name="example_legacy_app"></a>Example legacy application
 
@@ -1263,4 +1267,6 @@ The code samples above are available here:
 - [CreateNewShipCommandMessageHandler](https://github.com/xhafan/legacy-to-coreddd/blob/master/src/ServiceApp/CommandMessageHandlers/CreateNewShipCommandMessageHandler.cs)
 
 ### <a name="conclusion"></a>Conclusion
-Congratulations for making it to the end of this long blog post. Hopefully this blog post will help somebody to  rewrite a legacy application using DDD. The techniques mentioned in this blog post are applicable for a green field development as well. Please share any comment you might have in the discussion below. Thank you for reading!
+Congratulations for making it to the end of this long blog post! I hope it will help somebody to  rewrite a legacy application using DDD. The techniques mentioned in this blog post are applicable for a green field development as well. I realize that the ship creation and ship update example in this blog post does not qualify as a "rich behaviour" example, but a rich behaviour example would make this blog post even longer! So, for a more complex DDD sample please have a look [here](https://github.com/xhafan/coreddd/wiki/DDD-sample). 
+
+Please share any comment you might have in the discussion below. Thank you for reading!
