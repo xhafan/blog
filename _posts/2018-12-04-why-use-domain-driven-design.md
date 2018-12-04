@@ -17,5 +17,5 @@ DDD is suitable for larger projects with a complex domain behaviour, and less su
 Start using DDD with [Chicago style test-driven development](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) (TDD), and the project you are working on will never become one of those unmaintainable slowly dying projects. 
 
 For a great explanation of DDD, please refer to this [Stack Overflow answer](https://stackoverflow.com/a/1222488/379279).  
-For diving deep into DDD I recommend [Eric Evan's book](https://amzn.to/2E9dRAC).  
+For diving deep into DDD I recommend [Eric Evans's book](https://amzn.to/2E9dRAC).  
 For a domain-driven design and a database driven design comparison, please refer to this [Stack Overflow answer](https://stackoverflow.com/a/308647/379279).  
