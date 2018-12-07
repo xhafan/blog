@@ -22,7 +22,7 @@ DDD is suitable for larger projects with a complex domain behaviour, and less su
 
 For diving deep into DDD I recommend [Eric Evans's book](https://amzn.to/2E9dRAC).
 
-Here is an practical example of DDD done in an ASP.NET Core MVC sample application using my [CoreDdd](https://github.com/xhafan/coreddd/) .NET library. It's a simple implementation of updating a ship data, using [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern. The controller:
+Here is a practical example of DDD done in an ASP.NET Core MVC sample application using my [CoreDdd](https://github.com/xhafan/coreddd/) .NET library and NHibernate persistence. It's a simple implementation of updating a ship data, using [CQRS](https://martinfowler.com/bliki/CQRS.html) pattern. The controller:
 ```c#
 public class ShipController : Controller
 {
@@ -91,7 +91,9 @@ public class Ship : Entity, IAggregateRoot
     }
 }
 ```
-The `UpdateData` method just updates the data properties (not a rocket science behaviour here). The code sample is available [here](https://github.com/xhafan/coreddd-sample/blob/master/src/CoreDddSampleWebAppCommon/Domain/Ship.cs). The whole HTTP request is wrapped inside a database transaction which commits at the end of the request. The transaction wrapping is implemented as an ASP.NET Core middleware:
+The `UpdateData` method just updates the data properties (not a rocket science behaviour here). The code sample is available [here](https://github.com/xhafan/coreddd-sample/blob/master/src/CoreDddSampleWebAppCommon/Domain/Ship.cs). 
+
+Here's how the transparent persistence works. The whole HTTP request is wrapped inside a database transaction which commits at the end of the request. The transaction wrapping is implemented as an ASP.NET Core middleware:
 ```c#
 public class UnitOfWorkDependencyInjectionMiddleware : BaseUnitOfWorkMiddleware
 {
