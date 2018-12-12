@@ -260,7 +260,7 @@ public class Ship : Entity, IAggregateRoot
     public IEnumerable<ShipHistory> ShipHistories => _shipHistories;
 }
 ```
-The private field `_shipHistories` is a collection where new `ShipHistory` records can be added, and the public property `ShipHistories` exposes the ship history collection as unmodifiable enumerable. Now we can add a new test into `when_creating_new_ship`:
+The private field `_shipHistories` is a collection where new `ShipHistory` records can be added, and the public property `ShipHistories` exposes the ship history collection as an unmodifiable enumerable (why? we don't want anybody from the outside to be able to modify the ship history collection; the ship history collection can be modified only by invoking a `Ship` entity public method; for more info about this see [encapsulation](https://stackoverflow.com/a/29224840/379279)). Now we can add a new test into `when_creating_new_ship`:
 ```c#
 [Test]
 public void ship_history_record_is_created_and_its_data_are_populated()
