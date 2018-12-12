@@ -432,7 +432,7 @@ public class ShipHistoryMappingOverrides : IAutoMappingOverride<ShipHistory>
     }
 }
 ```
-This mapping classes instruct NHibernate to map `Ship` entity `Id` property into table `Ship`, column `ShipId`, and that the id generation will be done by SQL Server identity. Also, property `Name` will be mapped into `ShipName` column. Similar mapping for `ShipHistory`.
+This mapping classes instruct NHibernate to map `Ship` entity `Id` property into the table `Ship` - column `ShipId`, and that the id generation will be done by SQL Server identity. Also, the property `Name` will be mapped into the `ShipName` column. Similar mapping for `ShipHistory`.
 
 Now the `Ship` persistence passes. Let's add a new persistence test for `ShipHistory`:
 ```c#
