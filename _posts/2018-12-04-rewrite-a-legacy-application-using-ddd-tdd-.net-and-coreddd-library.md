@@ -583,7 +583,7 @@ public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipComma
     }
 }
 ```
-The test passes. Please note that the command handler test should test just the command handler and the happy path of the domain code, any branching (=if) in the domain entity code should be covered by a domain tests and not command handler tests. Also, this test is [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test, which adds value of knowing that things work end to end. Let's see how [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) unit test would look like (with the help of mocking library [FakeItEasy](https://www.nuget.org/packages/FakeItEasy)):
+The test passes. Please note that the command handler test should test just the command handler and the happy path of the domain code, any branching (=if) in the domain entity code should be covered by the domain tests and not command handler tests. Also, this test is [Chicago style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) test, which adds value of knowing that things work end to end. Let's see how [London style TDD](https://softwareengineering.stackexchange.com/questions/123627/what-are-the-london-and-chicago-schools-of-tdd) unit test would look like (with the help of mocking library [FakeItEasy](https://www.nuget.org/packages/FakeItEasy)):
 ```c#
 using FakeItEasy;
 
