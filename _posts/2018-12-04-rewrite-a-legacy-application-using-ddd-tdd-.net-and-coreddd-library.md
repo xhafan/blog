@@ -819,6 +819,22 @@ public class ManageShipsController : Controller
         return RedirectToAction("CreateNewShip");
     }
 }
+```
+And we also need to implement the async version of the command handler:
+```c#
+    public class CreateNewShipCommandHandler : BaseCommandHandler<CreateNewShipCommand>
+    {
+        ...
+#if !NET40
+        public override async Task ExecuteAsync(CreateNewShipCommand command)
+        {
+            var newShip = new Ship(command.ShipName, command.Tonnage, command.ImoNumber);
+            await _shipRepository.SaveAsync(newShip);
+
+            RaiseCommandExecutedEvent(new CommandExecutedArgs { Args = newShip.Id });
+        }
+#endif
+    }
 ``` 
 The test passes. Let's implement controller method to view `CreateNewShip` view:
 ```c#
