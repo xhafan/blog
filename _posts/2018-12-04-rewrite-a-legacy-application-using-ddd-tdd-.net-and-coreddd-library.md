@@ -951,7 +951,7 @@ The test passes. We need to modify the view to show the last created ship id:
     Last ShipId created: @Context.Request.Query["lastCreatedShipId"]
 </form>
 ```
-Let's see how the London style TDD unit test for the `CreateNewShip` controller method would look like so we can compare it with the Chicago style TDD test:
+Let's see how the London style TDD unit test for the `CreateNewShip` controller method would look like so we can compare it with the Chicago style TDD test (the test uses [FakeItEasy](https://www.nuget.org/packages/FakeItEasy) mocking library):
 ```c#
 using FakeItEasy;
 ...
