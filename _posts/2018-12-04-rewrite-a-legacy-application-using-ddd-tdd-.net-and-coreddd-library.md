@@ -682,7 +682,7 @@ As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will i
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
-Add a new ASP.NET Core MVC project into the solution (let's call it _AspNetCoreMvcApp_ project), and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference `CoreDddSharedNhibernateConfigurator` from the _CoreDddShared_ project. Copy `hibernate.cfg.xml` from _LegacyWebFormsApp_ project into _AspNetCoreMvcApp_ project. The application will also partially reuse the domain code and the create new ship command/command handler.
+Add a new ASP.NET Core MVC project into the solution (let's call it _AspNetCoreMvcApp_ project), and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference `CoreDddSharedNhibernateConfigurator` from the _CoreDddShared_ project. Copy `hibernate.cfg.xml` from _LegacyWebFormsApp_ project into _AspNetCoreMvcApp_ project and make sure `Legacy` database is used in the connection string. The application will also partially reuse the domain code and the create new ship command/command handler.
 
 Create a new controller `ManageShipsController` with an empty method `CreateNewShip`:
 ```c#
@@ -699,7 +699,7 @@ public class ManageShipsController : Controller
     }
 }
 ```
-We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Add a new .NET Core class library project called _AspNetCoreMvcApp.IntegrationTests_, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests, and add the [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/) nuget package into it. Add *create new ship* test: 
+We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Add a new .NET Core class library project called _AspNetCoreMvcApp.IntegrationTests_, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests, and add the [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/) nuget package into it. Copy `hibernate.cfg.xml` from _CoreDddShared.IntegrationTests_ project into _AspNetCoreMvcApp.IntegrationTests_ project and make sure `LegacyTest` database is used in the connection string. Add *create new ship* test: 
 ```c#
 [TestFixture]
 public class when_creating_new_ship
