@@ -699,7 +699,7 @@ public class ManageShipsController : Controller
     }
 }
 ```
-We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Create a new .NET Core class library, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests, and add the [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/) nuget package into it. Add *create new ship* test: 
+We will add a Chicago style TDD integration test for the controller `CreateNewShip` method, and later a London style TDD unit test as well so we can compare the two. Add a new .NET Core class library project called _AspNetCoreMvcApp.IntegrationTests_, add your favourite unit testing framework to it (for [NUnit](https://nunit.org/) and .NET Core, please follow this [article](https://github.com/nunit/docs/wiki/.NET-Core-and-.NET-Standard)), follow this [tutorial](https://github.com/xhafan/coreddd/wiki/Persistence-tests) to add CoreDdd support for entity persistence tests, and add the [Microsoft.AspNetCore.Mvc](https://www.nuget.org/packages/Microsoft.AspNetCore.Mvc/) nuget package into it. Add *create new ship* test: 
 ```c#
 [TestFixture]
 public class when_creating_new_ship
