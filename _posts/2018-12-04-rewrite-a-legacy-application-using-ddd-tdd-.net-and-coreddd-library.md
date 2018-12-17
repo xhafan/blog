@@ -682,7 +682,7 @@ As the ASP.NET Web Forms page code-behind is not a good fit to do TDD, we will i
 
 ### <a name="rewrite_as_new_app"></a>Incrementally rewriting a legacy application problematic parts as a new ASP.NET Core MVC application
 
-Create a new ASP.NET Core MVC application, and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference the one from the shared library created for the Web Forms application (see above). The application will also partially reuse the domain code and the create new ship command/command handler.
+Add a new ASP.NET Core MVC project into the solution (let's call it _AspNetCoreMvcApp_ project), and follow this [tutorial](https://github.com/xhafan/coreddd/wiki/ASP.NET-Core) to add CoreDdd into it. Don't create a new NHibernate configurator class, but reference `CoreDddSharedNhibernateConfigurator` from the _CoreDddShared_ project. Copy `hibernate.cfg.xml` from _LegacyWebFormsApp_ project into _AspNetCoreMvcApp_ project. The application will also partially reuse the domain code and the create new ship command/command handler.
 
 Create a new controller `ManageShipsController` with an empty method `CreateNewShip`:
 ```c#
