@@ -1009,7 +1009,7 @@ public class when_creating_new_ship
     }
 }
 ```  
-This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, it is a useless test adding no value as one needs to simulate expected behaviour of other components.
+This London style TDD unit test needs to do some hacky stuff about simulating command executor behaviour to make it work. In my opinion, it is a useless test adding no value as one needs to simulate the expected behaviour of other components.
 
 The source code of the new ASP.NET Core MVC create ship implementation using DDD and CQRS is available [here](https://github.com/xhafan/legacy-to-coreddd/tree/master/src/AspNetCoreMvcApp). In there you can find an implementation of a ship update view, and listing existing ships view.
 
