@@ -975,8 +975,7 @@ public class when_creating_new_ship
 
         _commandExecutor = A.Fake<ICommandExecutor>();
         _FakeThatWhenCommandIsExecutedTheCommandExecutedEventIsRaisedWithCreatedShipIdAsEventArgs();
-        var queryExecutor = A.Fake<IQueryExecutor>();
-        var manageShipsController = new ManageShipsController(_commandExecutor, queryExecutor);
+        var manageShipsController = new ManageShipsController(_commandExecutor);
 
         _actionResult = await manageShipsController.CreateNewShip(_createNewShipCommand);
     }
