@@ -917,7 +917,7 @@ Now, let's add the view:
     <button type="submit" title="Clicking the button will execute a command to create a new ship">Create new ship</button>
 </form>
 ``` 
-Now you can run the application, navigate to the *create new ship* view, and it should be possible to create a new ship. Let's slightly improve the *create new ship* view to show the last ship id created. We need to modify the existing test:
+Now you can run the application, navigate to the *create new ship* view, and it should be possible to create a new ship. Let's slightly improve the *create new ship* view to show the last ship id created. We need to modify the existing test in _when_creating_new_ship_:
 ```c#
 [Test]
 public void action_result_is_redirect_to_action_result_with_last_created_ship_id_parameterer()
