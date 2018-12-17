@@ -1044,7 +1044,7 @@ public class InternationalMaritimeOrganizationVerifier : IInternationalMaritimeO
     }
 }
 ```
-Now, when you call the service to verify the IMO number, it will take simulated 4 seconds to return. If you call it directly from the main web request when creating a new ship, the whole request would take 4 seconds to complete. Here is the an example of how it could be done for the Web Forms app. The `Ship` entity:
+Now, when you call the service to verify the IMO number, it will take simulated 4 seconds to return. If you call it directly from the main web request when creating a new ship, the whole request would take 4 seconds to complete. Here is an example of how it could be done for the Web Forms app. The `Ship` entity:
 ```c#
 public class Ship : Entity, IAggregateRoot
 {
