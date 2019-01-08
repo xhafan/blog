@@ -1017,7 +1017,7 @@ The source code of the new ASP.NET Core MVC create ship implementation using DDD
 If your application is doing too much when handling a request, and some of the processing can be deferred to a later time, you can utilize [domain events](https://github.com/xhafan/coreddd/wiki/Domain-events) and [publish event messages over a message bus from domain event handlers](https://github.com/xhafan/coreddd/wiki/Domain-events#publishing-event-messages-over-a-message-bus-from-domain-event-handlers), and handle the event messages in a separate process and transaction. Deferring some processing to a later time can make the main request transaction smaller, thus making the request handling shorter. Here are some examples of a processing which can be deferred:
 
 - subsequent domain processing (e.g. when creating an order in an e-shop, the billing PDF generation can be done later)  
-- sending email
+- sending an email
 - accessing other web services
  
 Let's imagine that when a ship is created we need to verify it's IMO (International Maritime Organization) number using a web service. We won't be accessing a real web service, we will just create a new fake service `IInternationalMaritimeOrganizationVerifier`. Here is a version for .NET 4 Web Forms app:
