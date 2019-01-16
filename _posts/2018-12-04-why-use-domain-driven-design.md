@@ -38,11 +38,10 @@ public class ShipController : Controller
         ...
     }
     ...
-    public async Task<string> UpdateShipData(int shipId, string shipName, decimal tonnage)
+    [HttpPost]
+    public async Task UpdateShipData(int shipId, string shipName, decimal tonnage)
     {
         await _commandExecutor.ExecuteAsync(new UpdateShipDataCommand { ShipId = shipId, ShipName = shipName, Tonnage = tonnage });
-
-        return "Ship data updated.";
     }
 }
 ```
