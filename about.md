@@ -11,4 +11,5 @@ Hi! My name is Martin Havlišta. I'm DDD TDD .NET/C# software developer, author 
 * UK phone: +44 796 020 9808
 * [Twitter](https://twitter.com/xhafan)
 * [LinkedIn](https://linkedin.com/in/havlista)
+* [GitHub](https://github.com/xhafan)
  
