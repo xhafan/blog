@@ -12,4 +12,5 @@ Hi! My name is Martin Havlišta. I'm DDD TDD .NET/C# software developer, author 
 * [Twitter](https://twitter.com/xhafan)
 * [LinkedIn](https://linkedin.com/in/havlista)
 * [GitHub](https://github.com/xhafan)
+* [StackOverflow](https://stackoverflow.com/users/379279/xhafan)
  
