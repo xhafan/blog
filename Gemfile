@@ -1,3 +1,7 @@
 source "https://rubygems.org"
-gemspec
-gem 'jekyll-sitemap'
+gem "jekyll", "3.8.3"
+gem "ffi", "1.12.2"
+gem "jekyll-sitemap", "~> 1.2"
+gem "jekyll-feed", "~> 0.12"
+gem "jekyll-gist", "~> 1.4"
+gem "jekyll-paginate", "~> 1.1"
