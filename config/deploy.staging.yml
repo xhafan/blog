@@ -1,0 +1,7 @@
+proxy:
+  host: staging.xhafan.com
+  app_port: 4000
+
+env:
+  clear:
+    JEKYLL_ENV: "Staging"

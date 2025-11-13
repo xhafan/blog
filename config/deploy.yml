@@ -1,0 +1,19 @@
+service: xhafanblog
+
+image: xhafan/xhafanblog
+
+servers:
+  web:
+    - 192.168.0.190
+
+proxy:
+  ssl: true
+
+registry:
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
