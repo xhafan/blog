@@ -8,7 +8,7 @@ servers:
 
 proxy:
   ssl: true
-  host: xhafanblog.xhafan.com # this host does not have to exist - it's here just to make kamal happy
+  host: blog.xhafan.com
   app_port: 4000
   healthcheck:
     path: /blog/
