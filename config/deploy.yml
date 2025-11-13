@@ -8,7 +8,7 @@ servers:
 
 proxy:
   ssl: true
-  host: xhafan.com
+  host: blog.xhafan.com
 
 registry:
   username:
