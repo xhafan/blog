@@ -1,6 +1,11 @@
 # Use the official Jekyll image
 FROM jekyll/jekyll:3.8.3
 
+RUN apk add --no-cache nginx supervisor
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Set the working directory inside the container
 WORKDIR /srv/jekyll
 
@@ -10,8 +15,7 @@ COPY . .
 # Build the static site
 RUN jekyll build
 
-# Expose the default Jekyll HTTP port
-EXPOSE 4000
+# Expose HTTP port
+EXPOSE 80
 
-# Run Jekyll serve
-CMD ["jekyll", "serve", "--host", "0.0.0.0"]
+CMD ["/usr/bin/supervisord", "-n"]

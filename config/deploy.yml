@@ -8,10 +8,7 @@ servers:
 
 proxy:
   ssl: true
-  host: blog.xhafan.com
-  app_port: 4000
-  healthcheck:
-    path: /blog/
+  host: xhafan.com
 
 registry:
   username:

@@ -1,6 +1,6 @@
 .kamal/
 config/
-nginx/
 .gitignore
 Dockerfile
-
+nginx.conf
+supervisord.conf
