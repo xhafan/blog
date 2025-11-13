@@ -1,7 +1,0 @@
-proxy:
-  host: xhafan.com
-  app_port: 4000
-
-env:
-  clear:
-    JEKYLL_ENV: "Production"

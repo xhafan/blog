@@ -1,3 +1,6 @@
 .kamal/
-config
+config/
+nginx/
+.gitignore
 Dockerfile
+
