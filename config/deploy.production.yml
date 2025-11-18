@@ -1,0 +1,8 @@
+servers:
+  web:
+    - 192.168.0.200
+
+proxy:
+  hosts:
+    - xhafan.com
+    - production.xhafan.com

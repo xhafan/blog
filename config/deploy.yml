@@ -2,13 +2,8 @@ service: xhafanblog
 
 image: xhafan/xhafanblog
 
-servers:
-  web:
-    - 192.168.0.190
-
 proxy:
   ssl: true
-  host: blog.xhafan.com
 
 registry:
   username:
