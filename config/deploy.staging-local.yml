@@ -4,4 +4,4 @@ servers:
 
 proxy:
   hosts: 
-    - staging.xhafan.com
+    - staging-local.xhafan.com

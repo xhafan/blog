@@ -1,0 +1,8 @@
+servers:
+  web:
+    - 46.224.68.58
+
+proxy:
+  hosts:
+    - xhafan.com
+    - production-hetzner.xhafan.com

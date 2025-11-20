@@ -5,4 +5,4 @@ servers:
 proxy:
   hosts:
     - xhafan.com
-    - production.xhafan.com
+    - production-local.xhafan.com
