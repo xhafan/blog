@@ -3,7 +3,9 @@ service: xhafanblog
 image: xhafan/xhafanblog
 
 proxy:
-  ssl: true
+  ssl: false
+  ssl_redirect: false
+  forward_headers: true
 
 registry:
   username:
