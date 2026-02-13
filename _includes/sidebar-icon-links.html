@@ -13,7 +13,7 @@
   {% endif %}
 
   {% if site.twitter_username %}
-    <a href="https://twitter.com/{{ site.twitter_username }}" title="Twitter" aria-label="Twitter" class="icon">
+    <a href="https://x.com/{{ site.twitter_username }}" title="X" aria-label="X" class="icon">
       <i class="fa fa-twitter"></i>
     </a>
   {% endif %}
@@ -55,15 +55,6 @@
        title="Tags" aria-label="Tags"
        href="{{ site.baseurl }}{{ tags_page.url }}">
       <i class="fa fa-tags"></i>
-    </a>
-  {% endif %}
-
-  {% if search_page %}
-    <a id="search-link"
-       class="icon{% if page.url == '/search' %} active{% endif %}"
-       title="Search" aria-label="Search"
-       href="{{ site.baseurl }}{{ search_page.url }}">
-      <i class="fa fa-search"></i>
     </a>
   {% endif %}
 
